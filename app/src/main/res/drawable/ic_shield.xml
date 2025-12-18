@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Shield Outline -->
+    <path
+        android:fillColor="#005F73"
+        android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12V5L12,1z" />
+
+    <!-- Shield Checkmark -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10.0,14.0l-2.5,-2.5l-1.4,1.4l3.9,3.9l7.0,-7.0l-1.4,-1.4l-5.6,5.6z" />
+</vector>

@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Light grey background -->
+    <path
+        android:fillColor="#E5E8EA"
+        android:pathData="M0,0h80v80h-80z"/>
+
+    <!-- Mountains -->
+    <path
+        android:fillColor="#9AA0A6"
+        android:pathData="M20,55 L35,40 L50,55 Z M43,45 L56,30 L70,55 Z"/>
+
+    <!-- Sun -->
+    <path
+        android:fillColor="#9AA0A6"
+        android:pathData="M55,20a8,8 0 1,1 -16,0a8,8 0 1,1 16,0" />
+</vector>
