@@ -5,23 +5,33 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.session.UserSession
+import com.example.echolock.util.SaveStegoAudio
+import java.io.File
 
 @Composable
 fun EncryptionCompleteScreen(
-    onDownload: () -> Unit,
     onBackDashboard: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val stegoFilePath = UserSession.stegoAudioPath
+    val stegoFile = stegoFilePath?.let { File(it) }
+
+    var isSaved by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -31,7 +41,7 @@ fun EncryptionCompleteScreen(
         verticalArrangement = Arrangement.Center
     ) {
 
-        // ✔ Success Tick Icon (No drawable needed)
+        /* ✅ SUCCESS ICON */
         Box(
             modifier = Modifier
                 .size(130.dp)
@@ -40,85 +50,129 @@ fun EncryptionCompleteScreen(
         ) {
             Icon(
                 imageVector = Icons.Filled.Check,
-                contentDescription = "Success",
+                contentDescription = null,
                 tint = Color(0xFF1EC971),
                 modifier = Modifier.size(80.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(Modifier.height(25.dp))
 
-        // Title
         Text(
-            "Encryption Complete",
+            text = "Encryption Complete",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF062A2F),
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(Modifier.height(10.dp))
 
         Text(
-            "Your message has been securely hidden within the audio file.",
+            text = "Your message has been securely hidden inside the audio file.",
             fontSize = 15.sp,
             color = Color(0xFF6B7E80),
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(Modifier.height(14.dp))
 
-        // 📄 Simple Security Report (no icons)
+        Text(
+            text = when {
+                isSaved -> "Saved to Downloads / EchoLock"
+                error != null -> error!!
+                else -> "Not saved to device yet"
+            },
+            fontSize = 14.sp,
+            color = if (error != null) Color.Red else Color(0xFF6B7E80)
+        )
+
+        Spacer(Modifier.height(22.dp))
+
+        /* ⬇️ DOWNLOAD BUTTON */
+        Button(
+            enabled = !isSaved,
+            onClick = {
+                error = null
+
+                if (stegoFile == null || !stegoFile.exists() || stegoFile.length() == 0L) {
+                    error = "Encrypted audio not found"
+                    return@Button
+                }
+
+                val success = SaveStegoAudio.saveStegoAudioToDownloads(
+                    context = context,
+                    stegoFile = stegoFile
+                )
+
+                if (success) {
+                    isSaved = true
+                } else {
+                    error = "Failed to save encrypted audio"
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF005F73)
+            )
+        ) {
+            Text(
+                text = if (isSaved) "Downloaded" else "Download Encrypted Audio",
+                color = Color.White,
+                fontSize = 15.sp
+            )
+        }
+
+        Spacer(Modifier.height(28.dp))
+
+        /* 📊 SECURITY REPORT */
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(Color(0xFFF6F8F9)),
-            elevation = CardDefaults.cardElevation(0.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-
             Column(modifier = Modifier.padding(20.dp)) {
 
                 Text(
-                    "Security Report",
+                    text = "Security Report",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color(0xFF062A2F)
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(Modifier.height(18.dp))
 
                 ReportItem("Stego Method", "LSB-Audio")
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
-                ReportItem("File Size", "2.4 MB")
+                ReportItem("Encoding", "UTF-8")
+                Spacer(Modifier.height(12.dp))
+
+                ReportItem(
+                    "File Status",
+                    if (isSaved) "Saved" else "Pending"
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(Modifier.height(30.dp))
 
-        // Download Button
-        Button(
-            onClick = onDownload,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(55.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF005F73)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Download File", color = Color.White, fontSize = 16.sp)
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        // Back to Dashboard
+        /* 🔙 BACK */
         Text(
             text = "Back to Dashboard",
             color = Color(0xFF005F73),
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.clickable { onBackDashboard() }
+            modifier = Modifier.clickable {
+                // 🔥 CLEAR SESSION (VERY IMPORTANT)
+                UserSession.decryptAudioUri = null
+                UserSession.secretMessage = null
+                UserSession.stegoAudioPath = null
+
+                onBackDashboard()
+            }
         )
     }
 }
@@ -130,6 +184,11 @@ fun ReportItem(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label, color = Color(0xFF6B7E80), fontSize = 14.sp)
-        Text(value, fontWeight = FontWeight.Bold, color = Color(0xFF062A2F), fontSize = 14.sp)
+        Text(
+            value,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF062A2F),
+            fontSize = 14.sp
+        )
     }
 }

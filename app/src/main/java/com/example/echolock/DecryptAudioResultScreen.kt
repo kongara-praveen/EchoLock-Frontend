@@ -1,5 +1,8 @@
 package com.example.echolock.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,16 +13,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
+import com.example.echolock.session.UserSession
 
 @Composable
 fun DecryptAudioResultScreen(
     onDone: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val decryptedMessage =
+        UserSession.decryptedMessage ?: "No hidden message found"
 
     Column(
         modifier = Modifier
@@ -34,7 +43,7 @@ fun DecryptAudioResultScreen(
             fontSize = 20.sp,
             color = Color(0xFF062A2F),
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { onDone() } // Back
+            modifier = Modifier.clickable { onDone() }
         )
 
         Spacer(modifier = Modifier.height(26.dp))
@@ -49,7 +58,7 @@ fun DecryptAudioResultScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_lock), // Use your lock-success icon
+                    painter = painterResource(id = R.drawable.ic_lock),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
@@ -57,19 +66,12 @@ fun DecryptAudioResultScreen(
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            Column {
-                Text(
-                    "Decryption Successful",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = Color(0xFF062A2F)
-                )
-                Text(
-                    "Source: secret_mission.mp3",
-                    fontSize = 13.sp,
-                    color = Color.Gray
-                )
-            }
+            Text(
+                text = "Decryption Result",
+                fontWeight = FontWeight.Bold,
+                fontSize = 17.sp,
+                color = Color(0xFF062A2F)
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -83,7 +85,7 @@ fun DecryptAudioResultScreen(
             Column(modifier = Modifier.padding(20.dp)) {
 
                 Text(
-                    "CONFIDENTIAL BRIEFING:",
+                    "EXTRACTED MESSAGE",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                     color = Color(0xFF062A2F)
@@ -92,14 +94,9 @@ fun DecryptAudioResultScreen(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    "Target location confirmed at coordinates\n" +
-                            "34.0522° N, 118.2437° W. Surveillance\n" +
-                            "team in position. Awaiting further\n" +
-                            "instructions.\n\n" +
-                            "Do not acknowledge receipt of this\n" +
-                            "message via open channels.",
+                    decryptedMessage,
                     fontSize = 14.sp,
-                    color = Color(0xFF062A2F),
+                    color = Color(0xFF062A2F)
                 )
             }
         }
@@ -108,7 +105,18 @@ fun DecryptAudioResultScreen(
 
         // COPY BUTTON
         Button(
-            onClick = {},
+            onClick = {
+                val clipboard =
+                    context.getSystemService(Context.CLIPBOARD_SERVICE)
+                            as ClipboardManager
+
+                clipboard.setPrimaryClip(
+                    ClipData.newPlainText(
+                        "Decrypted Message",
+                        decryptedMessage
+                    )
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -116,7 +124,7 @@ fun DecryptAudioResultScreen(
             shape = RoundedCornerShape(12.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_copy), // your clipboard icon
+                painter = painterResource(id = R.drawable.ic_copy),
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )

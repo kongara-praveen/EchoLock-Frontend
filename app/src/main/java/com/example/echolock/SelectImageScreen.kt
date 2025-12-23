@@ -36,7 +36,7 @@ import retrofit2.Response
 @Composable
 fun SelectImageScreen(
     onBack: () -> Unit,
-    onContinue: () -> Unit
+    onContinue: (String) -> Unit   // ✅ WILL PASS IMAGE URI STRING
 ) {
     val context = LocalContext.current
 
@@ -44,39 +44,30 @@ fun SelectImageScreen(
     var uploadedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isUploading by remember { mutableStateOf(false) }
 
-    /* ---------------- IMAGE UPLOAD ---------------- */
+    /* ---------------- IMAGE UPLOAD (OPTIONAL BACKEND) ---------------- */
     fun uploadImage(uri: Uri) {
         isUploading = true
 
         val file = uriToFile(context, uri)
+        val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+        val requestBody = file.asRequestBody(mimeType.toMediaType())
 
-        val mimeType =
-            context.contentResolver.getType(uri) ?: "image/jpeg"
+        val imagePart = MultipartBody.Part.createFormData(
+            name = "image",
+            filename = file.name,
+            body = requestBody
+        )
 
-        val requestBody =
-            file.asRequestBody(mimeType.toMediaType())
-
-        val imagePart =
-            MultipartBody.Part.createFormData(
-                "image",           // must match $_FILES['image']
-                file.name,         // original filename
-                requestBody
-            )
-
-        val userId =
-            "1".toRequestBody("text/plain".toMediaType())
+        val userId = "1".toRequestBody("text/plain".toMediaType())
 
         RetrofitClient.instance.uploadImage(imagePart, userId)
             .enqueue(object : Callback<GenericResponse> {
-
                 override fun onResponse(
                     call: Call<GenericResponse>,
                     response: Response<GenericResponse>
                 ) {
                     isUploading = false
-                    if (response.body()?.status == "success") {
-                        uploadedImageUri = uri
-                    }
+                    // ✅ Upload success — we DO NOT need image_name anymore
                 }
 
                 override fun onFailure(call: Call<GenericResponse>, t: Throwable) {
@@ -87,12 +78,11 @@ fun SelectImageScreen(
 
     /* ---------------- IMAGE PICKER ---------------- */
     val imagePickerLauncher =
-        rememberLauncherForActivityResult(
-            ActivityResultContracts.GetContent()
-        ) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
                 selectedImageUri = uri
-                uploadImage(uri)
+                uploadedImageUri = uri
+                uploadImage(uri) // optional
             }
         }
 
@@ -118,11 +108,8 @@ fun SelectImageScreen(
 
         Spacer(Modifier.height(26.dp))
 
-        /* ---------------- CONTENT ---------------- */
-
         if (uploadedImageUri == null) {
 
-            // Upload enabled
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -144,7 +131,7 @@ fun SelectImageScreen(
                     Text("Tap to Upload Image", fontSize = 16.sp)
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        if (isUploading) "Uploading..." else "Supports PNG, JPG, WEBP",
+                        text = if (isUploading) "Uploading..." else "Supports PNG, JPG, WEBP",
                         fontSize = 13.sp
                     )
                 }
@@ -152,9 +139,8 @@ fun SelectImageScreen(
 
         } else {
 
-            // Upload locked – preview shown
             Text(
-                text = "Uploaded Image Preview",
+                text = "Selected Image Preview",
                 fontSize = 14.sp,
                 color = Color(0xFF005F73)
             )
@@ -163,7 +149,7 @@ fun SelectImageScreen(
 
             AsyncImage(
                 model = uploadedImageUri,
-                contentDescription = "Uploaded Image",
+                contentDescription = "Selected Image",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
@@ -172,7 +158,6 @@ fun SelectImageScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // 🔁 Re-select Image
             Button(
                 onClick = {
                     uploadedImageUri = null
@@ -188,8 +173,14 @@ fun SelectImageScreen(
 
         Spacer(Modifier.weight(1f))
 
+        // ✅ IMPORTANT FIX HERE
         Button(
-            onClick = onContinue,
+            onClick = {
+                uploadedImageUri?.let {
+                    onContinue(it.toString())
+                }
+                // ✅ PASS URI STRING
+            },
             enabled = uploadedImageUri != null,
             modifier = Modifier
                 .fillMaxWidth()

@@ -1,13 +1,16 @@
 // AppNavigation.kt
 
 package com.example.echolock.navigation
-
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.echolock.session.UserSession
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.echolock.ui.screens.*
+import android.net.Uri
+import java.io.File
 
 sealed class Screen(val route: String) {
 
@@ -55,15 +58,19 @@ sealed class Screen(val route: String) {
 
     // IMAGE ENCRYPT
     object SelectImage : Screen("select_image")
-    object EncryptImageMessage : Screen("encrypt_image_message")
+    object EncryptImageMessage : Screen("encrypt_image_message/{imageName}")
     object ImageEncryptionProgress : Screen("image_encryption_progress")
-    object ImageEncryptionComplete : Screen("image_encryption_complete")
+    object ImageEncryptionComplete :
+        Screen("image_encryption_complete/{imageName}")
 
     // IMAGE DECRYPT
+    // IMAGE DECRYPT
     object DecryptImage : Screen("decrypt_image")
-    object ImageDecryptionProgress : Screen("image_decryption_progress")
-    object ImageDecryptionResult : Screen("image_decryption_result")
+    object ImageDecryptionProgress : Screen("image_decryption_progress/{imageUri}")
+    object ImageDecryptionResult :
+        Screen("image_decryption_result/{imageName}/{message}")
 
+    object AudioConversion : Screen("audio_conversion")
     // LOGOUT
     object Logout : Screen("logout")
     object LogoutSuccess : Screen("logout_success")
@@ -257,8 +264,14 @@ fun AppNavigation() {
         composable(Screen.SelectAudio.route) {
             SelectAudioScreen(
                 onBack = { navController.popBackStack() },
-                onContinue = { navController.navigate(Screen.EncryptAudioMessage.route) }
+                onGoEncrypt = {
+                    navController.navigate(Screen.EncryptAudioMessage.route)
+                },
+                onGoConvert = {
+                    navController.navigate(Screen.AudioConversion.route)
+                }
             )
+
         }
 
         composable(Screen.EncryptAudioMessage.route) {
@@ -267,19 +280,41 @@ fun AppNavigation() {
                 onEncrypt = { navController.navigate(Screen.EncryptionProgress.route) }
             )
         }
+        composable(Screen.AudioConversion.route) {
+            AudioConversionScreen(
+                onSuccess = {
+                    navController.navigate(Screen.EncryptAudioMessage.route) {
+                        popUpTo(Screen.SelectAudio.route) { inclusive = false }
+                    }
+                },
+                onFailed = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
 
         composable(Screen.EncryptionProgress.route) {
             EncryptionProgressScreen(
-                onCompleted = { navController.navigate(Screen.EncryptionComplete.route) }
+                onCompleted = {
+                    navController.navigate(Screen.EncryptionComplete.route)
+                }
             )
         }
 
+
         composable(Screen.EncryptionComplete.route) {
             EncryptionCompleteScreen(
-                onDownload = {},
-                onBackDashboard = { navController.navigate(Screen.Dashboard.route) }
+                onBackDashboard = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = true }
+                    }
+                }
             )
         }
+
+
+
 
         /* AUDIO DECRYPT */
         composable(Screen.DecryptAudio.route) {
@@ -305,25 +340,39 @@ fun AppNavigation() {
         composable(Screen.SelectImage.route) {
             SelectImageScreen(
                 onBack = { navController.popBackStack() },
-                onContinue = { navController.navigate(Screen.EncryptImageMessage.route) }
+                onContinue = { imageName ->
+                    navController.navigate(
+                        "encrypt_image_message/${Uri.encode(imageName)}"
+                    )
+
+                }
+
             )
         }
 
-        composable(Screen.EncryptImageMessage.route) {
-
-            // 🔥 this must come from upload_image.php response
-            val uploadedImageName = UserSession.lastUploadedImageName
-
-            EncryptImageMessageScreen(
-                imageName = uploadedImageName,
-                onBack = { navController.popBackStack() },
-                onSuccess = { stegoFileName ->
-                    navController.navigate(
-                        Screen.ImageEncryptionProgress.route + "/$stegoFileName"
-                    )
+        composable(
+            route = Screen.EncryptImageMessage.route,
+            arguments = listOf(
+                navArgument("imageName") {
+                    type = NavType.StringType
                 }
             )
+        ) { backStackEntry ->
+
+            val imageName =
+                backStackEntry.arguments?.getString("imageName") ?: ""
+
+            EncryptImageMessageScreen(
+                imageUri = imageName,   // ✅ PASS AS imageUri
+                onBack = { navController.popBackStack() },
+                onSuccess = {
+                    navController.navigate(Screen.ImageEncryptionProgress.route)
+                }
+            )
+
         }
+
+
 
 
         composable(Screen.ImageEncryptionProgress.route) {
@@ -332,32 +381,89 @@ fun AppNavigation() {
             )
         }
 
-        composable(Screen.ImageEncryptionComplete.route) {
+        composable(
+            route = Screen.ImageEncryptionComplete.route,
+            arguments = listOf(
+                navArgument("imageName") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+
+            val imageName =
+                backStackEntry.arguments?.getString("imageName") ?: ""
+
             ImageEncryptionCompleteScreen(
-                onDownload = {},
-                onBackDashboard = { navController.navigate(Screen.Dashboard.route) }
+                imageName = imageName,
+                onBackDashboard = {
+                    navController.navigate(Screen.Dashboard.route)
+                }
             )
         }
+
 
         /* IMAGE DECRYPT */
         composable(Screen.DecryptImage.route) {
             DecryptImageScreen(
                 onBack = { navController.popBackStack() },
-                onContinue = { navController.navigate(Screen.ImageDecryptionProgress.route) }
+                onContinue = { uri ->
+                    navController.navigate("image_decryption_progress/${Uri.encode(uri)}")
+                }
             )
+
         }
 
-        composable(Screen.ImageDecryptionProgress.route) {
+        composable(
+            route = Screen.ImageDecryptionProgress.route,
+            arguments = listOf(
+                navArgument("imageUri") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+
+            val imageUri =
+                backStackEntry.arguments?.getString("imageUri") ?: ""
+
             ImageDecryptionProgressScreen(
-                onCompleted = { navController.navigate(Screen.ImageDecryptionResult.route) }
+                imageUri = imageUri,
+                onCompleted = { imageName, extractedMessage ->
+                    navController.navigate(
+                        "image_decryption_result/${Uri.encode(imageName)}/${Uri.encode(extractedMessage)}"
+                    )
+                },
+                onFailed = {
+                    navController.popBackStack() // 👈 Go back if no message
+                }
+            )
+
+        }
+
+
+        composable(
+            route = Screen.ImageDecryptionResult.route,
+            arguments = listOf(
+                navArgument("imageName") { type = NavType.StringType },
+                navArgument("message") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+
+            val imageName =
+                backStackEntry.arguments?.getString("imageName") ?: ""
+
+            val extractedMessage =
+                backStackEntry.arguments?.getString("message") ?: ""
+
+            DecryptImageResultScreen(
+                imageName = imageName,
+                extractedMessage = extractedMessage,
+                onBack = { navController.popBackStack() },
+                onDone = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = true }
+                    }
+                }
             )
         }
 
-        composable(Screen.ImageDecryptionResult.route) {
-            DecryptImageResultScreen(
-                onDone = { navController.navigate(Screen.Dashboard.route) }
-            )
-        }
 
         /* LOGOUT FLOW */
         composable(Screen.Logout.route) {

@@ -1,12 +1,15 @@
 package com.example.echolock.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,12 +18,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
+import com.example.echolock.session.UserSession
 
 @Composable
 fun DecryptAudioScreen(
     onBack: () -> Unit,
     onContinue: () -> Unit
 ) {
+
+    var selectedAudioUri by remember { mutableStateOf<Uri?>(null) }
+
+    /* ---------- File Picker ---------- */
+    val audioPickerLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            uri?.let {
+                selectedAudioUri = it
+                UserSession.decryptAudioUri = it.toString()
+            }
+        }
 
     Column(
         modifier = Modifier
@@ -29,74 +46,118 @@ fun DecryptAudioScreen(
             .padding(16.dp)
     ) {
 
-        // Top Bar (Back)
-        Text(
-            text = "<  Decrypt Audio",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF062A2F),
-            modifier = Modifier.clickable { onBack() }
-        )
+        /* ---------- HEADER ---------- */
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "<",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onBack() }
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = "Decrypt Audio",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Spacer(modifier = Modifier.height(25.dp))
 
-        // File Upload Box
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(170.dp)
-                .background(Color(0xFFE9F7F7), RoundedCornerShape(14.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        /* ---------- AUDIO SELECTED / UPLOAD ---------- */
+        if (selectedAudioUri == null) {
 
-                Image(
-                    painter = painterResource(id = R.drawable.ic_upload),
-                    contentDescription = null,
-                    modifier = Modifier.size(44.dp)
-                )
+            // 🔼 Upload UI
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(170.dp)
+                    .background(Color(0xFFE9F7F7), RoundedCornerShape(14.dp))
+                    .clickable {
+                        audioPickerLauncher.launch(arrayOf("audio/*"))
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                Spacer(modifier = Modifier.height(10.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_upload),
+                        contentDescription = null,
+                        modifier = Modifier.size(44.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        "Select Encrypted Audio",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF005F73)
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        "Upload audio to extract message",
+                        fontSize = 13.sp,
+                        color = Color(0xFF6B7E80)
+                    )
+                }
+            }
+
+        } else {
+
+            // ✅ Selected File UI
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF1F9F9), RoundedCornerShape(14.dp))
+                    .padding(16.dp)
+            ) {
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_music),
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "Encrypted Audio Selected",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            text = selectedAudioUri?.lastPathSegment
+                                ?: "audio file",
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    "Select Encrypted File",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF005F73)
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    "Upload audio to extract message",
+                    text = "Reselect Audio",
+                    color = Color(0xFF005F73),
                     fontSize = 14.sp,
-                    color = Color(0xFF6B7E80)
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clickable {
+                        selectedAudioUri = null
+                        UserSession.decryptAudioUri = null
+                    }
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Recent Files Title
-        Text(
-            "Recent Encrypted Files",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF062A2F)
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Recent File Items
-        DecryptAudioItem("secret_mission.mp3", "Encrypted • 2 days ago")
-        Spacer(modifier = Modifier.height(12.dp))
-        DecryptAudioItem("confidential_brief.wav", "Encrypted • 2 days ago")
-
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Continue Button
+        /* ---------- CONTINUE ---------- */
         Button(
             onClick = onContinue,
+            enabled = selectedAudioUri != null,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
@@ -108,36 +169,6 @@ fun DecryptAudioScreen(
                 color = Color.White,
                 fontSize = 16.sp
             )
-        }
-    }
-}
-
-@Composable
-fun DecryptAudioItem(fileName: String, date: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(70.dp),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(Color(0xFFF6F8F9))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Image(
-                painter = painterResource(id = R.drawable.ic_music),
-                contentDescription = null,
-                modifier = Modifier.size(28.dp)
-            )
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column {
-                Text(fileName, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Text(date, fontSize = 13.sp, color = Color.Gray)
-            }
         }
     }
 }

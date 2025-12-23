@@ -66,11 +66,10 @@ dependencies {
     // ---------- NETWORK ----------
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-
-    // ✅ REQUIRED FOR FILE UPLOAD (FIXES YOUR ERRORS)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("io.coil-kt:coil-compose:2.5.0")
 
+    // ---------- IMAGE ----------
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     // ---------- DEBUG ----------
     debugImplementation(libs.androidx.compose.ui.tooling)

@@ -83,13 +83,13 @@ interface ApiService {
     fun getRecentImages(
         @Field("user_id") userId: Int
     ): Call<RecentImageResponse>
+
     // ================= IMAGE STEGANOGRAPHY =================
 
     @FormUrlEncoded
     @POST("image/hide_message.php")
     fun hideMessage(
-        @Field("image_name") imageName: String,
-        @Field("message") message: String
+        @Field("image_name") imageName: String,   // ✅ MUST MATCH PHP
+        @Field("message") message: String          // ✅ MUST MATCH PHP
     ): Call<StegoResponse>
-
 }
