@@ -55,18 +55,34 @@ fun OnBoardingAudioScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "Securely embed encrypted messages within any audio file\n" +
-                    "format without affecting playback quality.",
+            text = "Securely hide messages within any audio file format",
             fontSize = 15.sp, color = Color(0xFF5F7076), textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(75.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.width(38.dp).height(6.dp).background(Color(0xFF005F73), RoundedCornerShape(50)))
-            Spacer(Modifier.width(8.dp))
-            repeat(3) { Box(Modifier.size(7.dp).background(Color(0xFFE1E6E8), CircleShape)); Spacer(Modifier.width(8.dp)) }
+
+            // ● Active dot (first)
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(Color(0xFF005F73), CircleShape)
+            )
+
+            Spacer(Modifier.width(10.dp))
+
+            // ○ Inactive dots (remaining 2)
+            repeat(2) {
+                Box(
+                    modifier = Modifier
+                        .size(7.dp)
+                        .background(Color(0xFFE1E6E8), CircleShape)
+                )
+                Spacer(Modifier.width(10.dp))
+            }
         }
+
 
         Spacer(modifier = Modifier.height(58.dp))
 

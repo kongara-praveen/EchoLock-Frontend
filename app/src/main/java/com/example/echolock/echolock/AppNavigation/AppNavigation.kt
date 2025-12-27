@@ -11,6 +11,16 @@ import androidx.navigation.compose.rememberNavController
 import com.example.echolock.ui.screens.*
 import android.net.Uri
 import java.io.File
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.example.echolock.ui.theme.EchoLockTheme
+// 🔥 SIMPLE GLOBAL THEME STATE
+enum class AppTheme {
+    LIGHT, DARK, SYSTEM
+}
+
+val currentAppTheme = mutableStateOf(AppTheme.SYSTEM)
+
 
 sealed class Screen(val route: String) {
 
@@ -77,12 +87,27 @@ sealed class Screen(val route: String) {
 
     object EditProfile : Screen("edit_profile")
     object PasswordUpdatedSuccess : Screen("password_updated_success")
+    // TAMPER CHECK
+    object TamperUpload : Screen("tamper_upload")
+    object TamperProgress : Screen("tamper_progress/{fileUri}")
+    object TamperResult : Screen("tamper_result/{isSafe}/{fileName}")
+    object AppTheme : Screen("app_theme")
+
 }
 
 @Composable
 fun AppNavigation() {
 
     val navController = rememberNavController()
+    val theme = currentAppTheme.value
+
+    EchoLockTheme(
+        darkTheme = when (theme) {
+            AppTheme.DARK -> true
+            AppTheme.LIGHT -> false
+            AppTheme.SYSTEM -> isSystemInDarkTheme()
+        }
+    ) {
 
     NavHost(
         navController = navController,
@@ -163,10 +188,11 @@ fun AppNavigation() {
         composable(Screen.Verification.route) {
             VerificationScreen(
                 onBack = { navController.popBackStack() },
-                onVerify = { navController.navigate(Screen.ResetPassword.route) },
-                onResend = {}
+                onVerified = { navController.navigate(Screen.ResetPassword.route) }
             )
+
         }
+
 
         composable(Screen.ResetPassword.route) {
             ResetPasswordScreen(
@@ -175,11 +201,17 @@ fun AppNavigation() {
             )
         }
 
-        composable(Screen.ResetSuccess.route) {
-            PasswordResetSuccessScreen(
-                onContinue = { navController.navigate(Screen.Login.route) }
+        composable(Screen.ResetPassword.route) {
+            ResetPasswordScreen(
+                onBack = { navController.popBackStack() },
+                onResetDone = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
             )
         }
+
 
         /* TERMS + PRIVACY */
         composable(Screen.Terms.route) {
@@ -190,13 +222,15 @@ fun AppNavigation() {
         }
 
 
-
         /* DASHBOARD */
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onEncryptAudio = { navController.navigate(Screen.SelectAudio.route) },
                 onEncryptImage = { navController.navigate(Screen.SelectImage.route) },
-                onTamperCheck = {},
+                onTamperCheck = {
+                    navController.navigate(Screen.TamperUpload.route)
+                },
+
 
                 onDecryptAudio = { navController.navigate(Screen.DecryptAudio.route) },
                 onDecryptImage = { navController.navigate(Screen.DecryptImage.route) },
@@ -237,7 +271,7 @@ fun AppNavigation() {
                 onAboutClick = { navController.navigate(Screen.About.route) },
                 onFaqClick = { navController.navigate(Screen.Faq.route) },
                 onLogoutClick = { navController.navigate(Screen.Logout.route) },
-
+                onAppThemeClick = { navController.navigate(Screen.AppTheme.route) },
                 onHomeClick = { navController.navigate(Screen.Dashboard.route) },
                 onFilesClick = { navController.navigate(Screen.Files.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
@@ -312,8 +346,6 @@ fun AppNavigation() {
                 }
             )
         }
-
-
 
 
         /* AUDIO DECRYPT */
@@ -394,11 +426,11 @@ fun AppNavigation() {
                 backStackEntry.arguments?.getString("imageName") ?: ""
 
             ImageEncryptionCompleteScreen(
-                imageName = imageName,
                 onBackDashboard = {
-                    navController.navigate(Screen.Dashboard.route)
+                    navController.navigate("dashboard")
                 }
             )
+
         }
 
 
@@ -427,7 +459,11 @@ fun AppNavigation() {
                 imageUri = imageUri,
                 onCompleted = { imageName, extractedMessage ->
                     navController.navigate(
-                        "image_decryption_result/${Uri.encode(imageName)}/${Uri.encode(extractedMessage)}"
+                        "image_decryption_result/${Uri.encode(imageName)}/${
+                            Uri.encode(
+                                extractedMessage
+                            )
+                        }"
                     )
                 },
                 onFailed = {
@@ -511,6 +547,80 @@ fun AppNavigation() {
                 }
             )
         }
+        /* ================== TAMPER CHECK ================== */
 
+        composable(Screen.TamperUpload.route) {
+            TamperCheckScreen(
+                onBack = { navController.popBackStack() },
+                onStartCheck = { uri ->
+                    navController.navigate(
+                        "tamper_progress/${Uri.encode(uri.toString())}"
+                    )
+                }
+            )
+        }
+
+
+        composable(
+            route = Screen.TamperProgress.route,
+            arguments = listOf(navArgument("fileUri") { type = NavType.StringType })
+        ) { backStackEntry ->
+
+            val uri = Uri.parse(
+                backStackEntry.arguments!!.getString("fileUri")!!
+            )
+
+            TamperCheckProgressScreen(
+                fileUri = uri,
+                onResult = { isSafe, fileName ->
+                    navController.navigate(
+                        "tamper_result/$isSafe/${Uri.encode(fileName)}"
+                    ) {
+                        // 🔥 THIS PREVENTS APP CLOSE
+                        popUpTo(Screen.TamperProgress.route) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+
+
+
+        composable(
+            route = Screen.TamperResult.route,
+            arguments = listOf(
+                navArgument("isSafe") { type = NavType.BoolType },
+                navArgument("fileName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+
+            TamperCheckCompleteScreen(
+                isSafe = backStackEntry.arguments!!.getBoolean("isSafe"),
+                fileName = backStackEntry.arguments!!.getString("fileName")!!,
+                onBackDashboard = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = true }
+                    }
+                },
+                onCheckAgain = {
+                    navController.navigate(Screen.TamperUpload.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = false }
+                    }
+                }
+            )
+
+        }
+        composable(Screen.AppTheme.route) {
+            AppThemeScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+
+
+    }
     }
 }

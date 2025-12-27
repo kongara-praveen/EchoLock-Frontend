@@ -1,6 +1,7 @@
 package com.example.echolock.ui.screens
 
 // ===================== REQUIRED IMPORTS =====================
+import androidx.compose.ui.text.TextStyle
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -95,8 +96,20 @@ fun ChangePasswordScreen(
                         currentVisible = !currentVisible
                     }
                 )
-            }
+            },
+            textStyle = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xFF0A2E45) // 🔥 BRIGHT TEXT
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color(0xFF0A2E45),
+                unfocusedTextColor = Color(0xFF0A2E45),
+                focusedBorderColor = Color(0xFF005F73),
+                unfocusedBorderColor = Color(0xFFD0DBDF),
+                cursorColor = Color(0xFF005F73)
+            )
         )
+
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -122,8 +135,20 @@ fun ChangePasswordScreen(
                         newVisible = !newVisible
                     }
                 )
-            }
+            },
+            textStyle = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xFF0A2E45)
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color(0xFF0A2E45),
+                unfocusedTextColor = Color(0xFF0A2E45),
+                focusedBorderColor = Color(0xFF005F73),
+                unfocusedBorderColor = Color(0xFFD0DBDF),
+                cursorColor = Color(0xFF005F73)
+            )
         )
+
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -149,8 +174,20 @@ fun ChangePasswordScreen(
                         confirmVisible = !confirmVisible
                     }
                 )
-            }
+            },
+            textStyle = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xFF0A2E45)
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color(0xFF0A2E45),
+                unfocusedTextColor = Color(0xFF0A2E45),
+                focusedBorderColor = Color(0xFF005F73),
+                unfocusedBorderColor = Color(0xFFD0DBDF),
+                cursorColor = Color(0xFF005F73)
+            )
         )
+
 
         Spacer(modifier = Modifier.height(22.dp))
 

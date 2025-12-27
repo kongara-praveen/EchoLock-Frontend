@@ -1,20 +1,30 @@
 package com.example.echolock.util
 
 import android.graphics.Bitmap
+import java.nio.charset.Charset
 
 object ImageSteganography {
 
     private const val MAGIC_HEADER = "ECHOLOCK::"
+    private const val SEPARATOR = "::"
+    private val CHARSET = Charsets.UTF_8
 
     /* ================== ENCODE ================== */
-    fun encode(original: Bitmap, message: String): Bitmap {
+    fun encode(
+        original: Bitmap,
+        serverToken: String,
+        message: String
+    ): Bitmap {
 
         val mutableBitmap =
             original.copy(Bitmap.Config.ARGB_8888, true)
 
-        // 🔐 Add header + end marker
-        val fullMessage = MAGIC_HEADER + message + "\u0000"
-        val msgBytes = fullMessage.toByteArray()
+        // 🔐 Payload structure:
+        // ECHOLOCK::<SERVER_TOKEN>::<MESSAGE>\0
+        val payload =
+            "$MAGIC_HEADER$serverToken$SEPARATOR$message\u0000"
+
+        val msgBytes = payload.toByteArray(CHARSET)
 
         var byteIndex = 0
         var bitIndex = 0
@@ -43,11 +53,12 @@ object ImageSteganography {
                 }
             }
         }
+
         return mutableBitmap
     }
 
     /* ================== DECODE ================== */
-    fun decode(bitmap: Bitmap): String? {
+    fun decode(bitmap: Bitmap): DecodedPayload? {
 
         val bytes = ArrayList<Byte>()
         var currentByte = 0
@@ -56,8 +67,7 @@ object ImageSteganography {
         loop@ for (y in 0 until bitmap.height) {
             for (x in 0 until bitmap.width) {
 
-                val pixel = bitmap.getPixel(x, y)
-                val blue = pixel and 0xFF
+                val blue = bitmap.getPixel(x, y) and 0xFF
                 val bit = blue and 1
 
                 currentByte = (currentByte shl 1) or bit
@@ -66,7 +76,7 @@ object ImageSteganography {
                 if (bitIndex == 8) {
                     bytes.add(currentByte.toByte())
 
-                    if (currentByte == 0) break@loop  // 🔚 End marker
+                    if (currentByte == 0) break@loop
 
                     bitIndex = 0
                     currentByte = 0
@@ -74,13 +84,30 @@ object ImageSteganography {
             }
         }
 
-        val extracted = String(bytes.toByteArray()).trimEnd('\u0000')
+        val extracted =
+            String(bytes.toByteArray(), CHARSET).trimEnd('\u0000')
 
-        // ✅ VALIDATION
-        return if (extracted.startsWith(MAGIC_HEADER)) {
+        // ❌ Not an EchoLock image
+        if (!extracted.startsWith(MAGIC_HEADER)) return null
+
+        val content =
             extracted.removePrefix(MAGIC_HEADER)
-        } else {
-            null   // ❌ NOT an EchoLock encrypted image
-        }
+
+        val parts =
+            content.split(SEPARATOR, limit = 2)
+
+        // ❌ Corrupted / tampered payload
+        if (parts.size != 2) return null
+
+        return DecodedPayload(
+            token = parts[0],
+            message = parts[1]
+        )
     }
 }
+
+/* ================== MODEL ================== */
+data class DecodedPayload(
+    val token: String,
+    val message: String
+)

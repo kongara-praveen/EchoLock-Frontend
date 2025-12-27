@@ -4,6 +4,9 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.Query
+
 
 interface ApiService {
 
@@ -30,6 +33,14 @@ interface ApiService {
     fun sendOtp(
         @Field("email") email: String
     ): Call<GenericResponse>
+
+    @FormUrlEncoded
+    @POST("verify_otp.php")
+    fun verifyOtp(
+        @Field("email") email: String,
+        @Field("otp") otp: String
+    ): Call<GenericResponse>
+
 
     // ================= PROFILE =================
 
@@ -92,4 +103,42 @@ interface ApiService {
         @Field("image_name") imageName: String,   // ✅ MUST MATCH PHP
         @Field("message") message: String          // ✅ MUST MATCH PHP
     ): Call<StegoResponse>
+    @GET("files/get_files.php")
+    suspend fun getFiles(
+        @Query("user_id") userId: Int
+    ): FilesResponse
+    @GET("history/get_history.php")
+    suspend fun getHistory(
+        @Query("user_id") userId: Int
+    ): HistoryResponse
+    @FormUrlEncoded
+    @POST("history/add_history.php")
+    suspend fun addHistory(
+        @Field("user_id") userId: Int,
+        @Field("file_name") fileName: String,
+        @Field("action") action: String
+    ): GenericResponse
+    @POST("tamper/register_encryption.php")
+    fun createImageToken(): Call<TokenResponse>
+    @FormUrlEncoded
+    @POST("reset_password.php")
+    fun resetPassword(
+        @Field("email") email: String,
+        @Field("password") password: String   // ✅ MUST BE "password"
+    ): Call<GenericResponse>
+    @FormUrlEncoded
+    @POST("signup_send_otp.php")
+    fun signupSendOtp(
+        @Field("email") email: String
+    ): Call<GenericResponse>
+
+    @FormUrlEncoded
+    @POST("signup_verify_otp.php")
+    fun signupVerifyOtp(
+        @Field("email") email: String,
+        @Field("otp") otp: String
+    ): Call<GenericResponse>
+
+
+
 }

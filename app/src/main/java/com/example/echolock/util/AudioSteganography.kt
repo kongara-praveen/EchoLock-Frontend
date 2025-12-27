@@ -55,13 +55,10 @@ object AudioSteganography {
     }
 
     /* ================= DECODE ================= */
-
     fun decode(wavFile: File): String {
-        val audioBytes = wavFile.readBytes()
 
-        if (audioBytes.size <= 44) {
-            return "Invalid audio file"
-        }
+        val audioBytes = wavFile.readBytes()
+        if (audioBytes.size <= 44) return "Decryption failed"
 
         val data = audioBytes.copyOfRange(44, audioBytes.size)
 
@@ -69,19 +66,31 @@ object AudioSteganography {
         var currentByte = 0
         var bitCount = 0
 
+        val END = "###ECHOLOCK###"
+        val MAX_BYTES_TO_READ = 5000   // 🔥 FAST EXIT LIMIT
+
         for (byte in data) {
-            val lsb = byte.toInt() and 1
-            currentByte = (currentByte shl 1) or lsb
+
+            currentByte = (currentByte shl 1) or (byte.toInt() and 1)
             bitCount++
 
             if (bitCount == 8) {
                 resultBytes.add(currentByte.toByte())
 
-                val decodedText =
-                    String(resultBytes.toByteArray(), Charsets.UTF_8)
+                val text =
+                    try {
+                        String(resultBytes.toByteArray(), Charsets.UTF_8)
+                    } catch (e: Exception) {
+                        return "No hidden message found"
+                    }
 
-                if (decodedText.contains(END_MARKER)) {
-                    return decodedText.substringBefore(END_MARKER)
+                if (text.contains(END)) {
+                    return text.substringBefore(END)
+                }
+
+                // 🚀 EARLY EXIT (NORMAL AUDIO)
+                if (resultBytes.size > MAX_BYTES_TO_READ) {
+                    return "No hidden message found"
                 }
 
                 currentByte = 0
@@ -91,4 +100,5 @@ object AudioSteganography {
 
         return "No hidden message found"
     }
+
 }

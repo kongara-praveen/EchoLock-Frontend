@@ -26,7 +26,7 @@ fun SettingsScreen(
     onAboutClick: () -> Unit,
     onFaqClick: () -> Unit,
     onLogoutClick: () -> Unit,
-
+    onAppThemeClick: () -> Unit,
     onHomeClick: () -> Unit,
     onFilesClick: () -> Unit,
     onHistoryClick: () -> Unit,
@@ -70,7 +70,12 @@ fun SettingsScreen(
 
             item {
                 SettingsSection("Preferences") {
-                    SettingItem(Icons.Filled.DarkMode, "App Theme")
+                    SettingItem(
+                        Icons.Filled.DarkMode,
+                        "App Theme",
+                        onClick = { onAppThemeClick() }
+                    )
+
                     SettingItem(Icons.Filled.Folder, "File Storage")
                     SettingItem(Icons.Filled.Notifications, "Notifications")
                 }

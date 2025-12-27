@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private const val BASE_URL = "http://10.0.2.2/echolock_api/"
+    private const val BASE_URL = "http://10.167.221.28/echolock_api/"
 
     // Lenient Gson (important during development)
     private val gson: Gson = GsonBuilder()

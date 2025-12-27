@@ -1,5 +1,6 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.ui.text.TextStyle
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
@@ -18,8 +19,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.api.RetrofitClient
+import com.example.echolock.api.TokenResponse
+import com.example.echolock.session.UserSession
 import com.example.echolock.util.ImageSteganography
 import com.example.echolock.util.saveStegoImage
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
 fun EncryptImageMessageScreen(
@@ -39,9 +46,7 @@ fun EncryptImageMessageScreen(
     ) {
 
         /* ---------- TOP BAR ---------- */
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
@@ -64,9 +69,7 @@ fun EncryptImageMessageScreen(
         /* ---------- INFO CARD ---------- */
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFEFFFF9)
-            ),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFEFFFF9)),
             shape = RoundedCornerShape(14.dp)
         ) {
             Text(
@@ -87,61 +90,99 @@ fun EncryptImageMessageScreen(
                 .fillMaxWidth()
                 .height(180.dp),
             placeholder = {
-                Text("Type your secret message here…")
+                Text(
+                    "Type your secret message here…",
+                    color = Color(0xFF8A9AA0)
+                )
             },
             shape = RoundedCornerShape(14.dp),
-            maxLines = 6
+            maxLines = 6,
+            textStyle = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xFF0A2E45) // 🔥 BRIGHT TEXT
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color(0xFF0A2E45),
+                unfocusedTextColor = Color(0xFF0A2E45),
+                focusedBorderColor = Color(0xFF005F73),
+                unfocusedBorderColor = Color(0xFFD0DBDF),
+                cursorColor = Color(0xFF005F73)
+            )
         )
+
 
         Spacer(Modifier.height(30.dp))
 
         /* ---------- ACTION BUTTON ---------- */
         Button(
-            onClick = {
-                if (message.isBlank()) {
-                    Toast.makeText(
-                        context,
-                        "Message cannot be empty",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@Button
-                }
-
-                loading = true
-
-                try {
-                    val uri = Uri.parse(imageUri)
-                    val stream = context.contentResolver.openInputStream(uri)
-                        ?: throw Exception("Cannot open image")
-
-                    val bitmap = BitmapFactory.decodeStream(stream)
-                        ?: throw Exception("Image decode failed")
-
-                    val stegoBitmap =
-                        ImageSteganography.encode(bitmap, message)
-
-                    saveStegoImage(context, stegoBitmap)
-
-                    loading = false
-                    onSuccess()
-
-                } catch (e: Exception) {
-                    loading = false
-                    Toast.makeText(
-                        context,
-                        "Encryption failed: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            },
             enabled = !loading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
             shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF005F73)
-            )
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005F73)),
+            onClick = {
+
+                if (message.isBlank()) {
+                    Toast.makeText(context, "Message cannot be empty", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+
+                loading = true
+
+                /* ================= STEP 1: REQUEST TOKEN ================= */
+                RetrofitClient.instance.createImageToken()
+                    .enqueue(object : Callback<TokenResponse> {
+
+                        override fun onResponse(
+                            call: Call<TokenResponse>,
+                            response: Response<TokenResponse>
+                        ) {
+                            if (!response.isSuccessful || response.body() == null) {
+                                loading = false
+                                Toast.makeText(context, "Token generation failed", Toast.LENGTH_LONG).show()
+                                return
+                            }
+
+                            // ✅ SAVE TOKEN
+                            UserSession.serverToken = response.body()!!.token
+
+                            try {
+                                val uri = Uri.parse(imageUri)
+                                val stream = context.contentResolver.openInputStream(uri)
+                                    ?: throw Exception("Cannot open image")
+
+                                val bitmap = BitmapFactory.decodeStream(stream)
+                                    ?: throw Exception("Image decode failed")
+
+                                /* ================= STEP 2: ENCRYPT ================= */
+                                val stegoBitmap = ImageSteganography.encode(
+                                    original = bitmap,
+                                    serverToken = UserSession.serverToken,
+                                    message = message
+                                )
+
+                                saveStegoImage(context, stegoBitmap)
+
+                                loading = false
+                                onSuccess()
+
+                            } catch (e: Exception) {
+                                loading = false
+                                Toast.makeText(
+                                    context,
+                                    "Encryption failed: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<TokenResponse>, t: Throwable) {
+                            loading = false
+                            Toast.makeText(context, "Network error", Toast.LENGTH_LONG).show()
+                        }
+                    })
+            }
         ) {
             Text(
                 text = if (loading) "Encrypting…" else "Encrypt & Hide",

@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 fun ImageDecryptionProgressScreen(
     imageUri: String,
     onCompleted: (imageName: String, extractedMessage: String) -> Unit,
-    onFailed: () -> Unit           // ✅ ADD THIS
+    onFailed: () -> Unit
 ) {
     val context = LocalContext.current
     var progress by remember { mutableStateOf(0) }
@@ -52,10 +52,10 @@ fun ImageDecryptionProgressScreen(
                 return@LaunchedEffect
             }
 
-            // 🔓 REAL DECRYPTION
-            val extractedMessage = ImageSteganography.decode(bitmap)
+            // 🔓 REAL DECRYPTION (UPDATED)
+            val decodedResult = ImageSteganography.decode(bitmap)
 
-            if (extractedMessage == null || extractedMessage.isBlank()) {
+            if (decodedResult == null || decodedResult.message.isBlank()) {
                 Toast.makeText(
                     context,
                     "No hidden message found in this image",
@@ -70,8 +70,8 @@ fun ImageDecryptionProgressScreen(
 
             val imageName = uri.lastPathSegment ?: "EncryptedImage.png"
 
-            // ✅ SUCCESS ONLY HERE
-            onCompleted(imageName, extractedMessage)
+            // ✅ PASS ONLY MESSAGE STRING
+            onCompleted(imageName, decodedResult.message)
 
         } catch (e: Exception) {
             Toast.makeText(context, "Decryption failed", Toast.LENGTH_SHORT).show()
@@ -80,7 +80,7 @@ fun ImageDecryptionProgressScreen(
     }
 
     Column(
-        Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -95,13 +95,13 @@ fun ImageDecryptionProgressScreen(
         Spacer(Modifier.height(20.dp))
 
         Text(
-            "$progress%",
+            text = "$progress%",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
-            "Decrypting image...",
+            text = "Decrypting image...",
             fontSize = 15.sp,
             color = Color.Gray
         )

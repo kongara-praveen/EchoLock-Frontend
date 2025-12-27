@@ -82,51 +82,79 @@ fun LoginScreen(
         // EMAIL
         Text("Email Address", fontSize = 14.sp, fontWeight = FontWeight.Medium)
         Spacer(modifier = Modifier.height(8.dp))
-        TextField(
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            placeholder = { Text("name@agency.gov") },
+            placeholder = {
+                Text(
+                    "name@gmail.com",
+                    color = Color(0xFF8A9AA0) // darker placeholder
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            textStyle = TextStyle(fontSize = 15.sp),
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = Color(0xFFF7FAFB),
-                focusedContainerColor = Color.White
+            textStyle = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xFF0A2E45) // 🔥 BRIGHT TEXT
+            ),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF005F73),
+                unfocusedBorderColor = Color(0xFFD0DBDF),
+                cursorColor = Color(0xFF005F73),
+                focusedTextColor = Color(0xFF0A2E45),
+                unfocusedTextColor = Color(0xFF0A2E45)
             )
         )
+
+
 
         Spacer(modifier = Modifier.height(22.dp))
 
         // PASSWORD
         Text("Password", fontSize = 14.sp, fontWeight = FontWeight.Medium)
         Spacer(modifier = Modifier.height(8.dp))
-        TextField(
+        OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            placeholder = { Text("••••••••") },
+            placeholder = {
+                Text(
+                    "••••••••",
+                    color = Color(0xFF8A9AA0)
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             visualTransformation =
                 if (passwordVisible) VisualTransformation.None
                 else PasswordVisualTransformation(),
             trailingIcon = {
-                val icon =
-                    if (passwordVisible) Icons.Filled.VisibilityOff
-                    else Icons.Filled.Visibility
                 Icon(
-                    imageVector = icon,
+                    imageVector = if (passwordVisible)
+                        Icons.Filled.VisibilityOff
+                    else Icons.Filled.Visibility,
                     contentDescription = null,
                     modifier = Modifier.clickable {
                         passwordVisible = !passwordVisible
                     }
                 )
             },
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = Color(0xFFF7FAFB),
-                focusedContainerColor = Color.White
+            textStyle = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xFF0A2E45) // 🔥 BRIGHT TEXT
+            ),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF005F73),
+                unfocusedBorderColor = Color(0xFFD0DBDF),
+                cursorColor = Color(0xFF005F73),
+                focusedTextColor = Color(0xFF0A2E45),
+                unfocusedTextColor = Color(0xFF0A2E45)
             )
         )
+
+
 
         Spacer(modifier = Modifier.height(8.dp))
 

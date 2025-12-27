@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,13 +20,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.api.RetrofitClient
+import com.example.echolock.util.HistoryTempStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ImageEncryptionCompleteScreen(
-    imageName: String,
     onBackDashboard: () -> Unit
 ) {
     val context = LocalContext.current
+
+    // ✅ GET REAL IMAGE NAME (SET DURING UPLOAD)
+    val imageName = HistoryTempStore.lastImageFileName ?: return
+
+    /* -------- SAVE HISTORY (RUNS ONCE AUTOMATICALLY) -------- */
+    LaunchedEffect(key1 = imageName) {
+        try {
+            withContext(Dispatchers.IO) {
+                RetrofitClient.instance.addHistory(
+                    userId = 1,           // TODO replace with logged-in user
+                    fileName = imageName,
+                    action = "Encrypted"
+                )
+            }
+
+            // ✅ OPTIONAL: Clear after saving (prevents duplicate history)
+            HistoryTempStore.lastImageFileName = null
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -83,7 +109,7 @@ fun ImageEncryptionCompleteScreen(
     }
 }
 
-/* ---------------- DOWNLOAD FUNCTION ---------------- */
+/* ---------------- DOWNLOAD FUNCTION (NO HISTORY HERE) ---------------- */
 
 fun downloadEncryptedImage(
     context: Context,
@@ -91,7 +117,6 @@ fun downloadEncryptedImage(
 ) {
     val url =
         "http://10.0.2.2/echolock/image/download_image.php?image_name=$imageName"
-    // 🔁 Replace IP for real device
 
     val request = DownloadManager.Request(Uri.parse(url))
         .setTitle("EchoLock Encrypted Image")

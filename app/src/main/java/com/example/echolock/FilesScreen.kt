@@ -17,33 +17,30 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.echolock.R
+import com.example.echolock.model.FileItem
 import com.example.echolock.ui.common.BottomNavBar
-
-data class FileItem(
-    val name: String,
-    val size: String,
-    val date: String,
-    val type: String   // audio / image
-)
+import com.example.echolock.viewmodel.FilesViewModel
 
 @Composable
 fun FilesScreen(
     onBack: () -> Unit,
     onHomeClick: () -> Unit,
     onHistoryClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    viewModel: FilesViewModel = viewModel()
 ) {
 
     var selectedTab by remember { mutableStateOf(1) }
 
-    val files = listOf(
-        FileItem("secret_mission.mp3", "2.4 MB", "Today", "audio"),
-        FileItem("classified_doc.png", "4.1 MB", "Today", "image"),
-        FileItem("intel_brief.wav", "5.2 MB", "Yesterday", "audio"),
-        FileItem("evidence_photo.jpg", "3.8 MB", "Yesterday", "image"),
-        FileItem("witness_audio.mp3", "1.9 MB", "2 days ago", "audio")
-    )
+    val files by viewModel.files
+    val loading by viewModel.loading
+
+    // 🔹 Load data from backend
+    LaunchedEffect(Unit) {
+        viewModel.loadFiles(userId = 1)
+    }
 
     Column(
         modifier = Modifier
@@ -59,23 +56,44 @@ fun FilesScreen(
             Icon(
                 painter = painterResource(id = R.drawable.ic_back),
                 contentDescription = null,
-                modifier = Modifier.size(26.dp).clickable { onBack() }
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable { onBack() }
             )
 
             Spacer(Modifier.width(10.dp))
-
             Text("Files", fontSize = 22.sp, fontWeight = FontWeight.Bold)
         }
 
-        /* FILE LIST */
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(files) { file ->
-                FileItemCard(file)
+        /* CONTENT */
+        if (loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (files.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No files found", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(files) { file ->
+                    FileItemCard(file)
+                }
             }
         }
 
@@ -86,7 +104,7 @@ fun FilesScreen(
                 selectedTab = it
                 when (it) {
                     0 -> onHomeClick()
-                    1 -> {} // Already here
+                    1 -> {} // already here
                     2 -> onHistoryClick()
                     3 -> onSettingsClick()
                 }
@@ -98,10 +116,14 @@ fun FilesScreen(
 @Composable
 fun FileItemCard(file: FileItem) {
 
-    val icon = if (file.type == "audio") R.drawable.ic_music else R.drawable.ic_image
+    val icon =
+        if (file.type == "audio") R.drawable.ic_music
+        else R.drawable.ic_image
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -121,8 +143,16 @@ fun FileItemCard(file: FileItem) {
             Spacer(Modifier.width(12.dp))
 
             Column(Modifier.weight(1f)) {
-                Text(file.name, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                Text("${file.size} • ${file.date}", fontSize = 13.sp, color = Color.Gray)
+                Text(
+                    file.name,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "${file.size} • ${file.date}",
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
             }
 
             Icon(

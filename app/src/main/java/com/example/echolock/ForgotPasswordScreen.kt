@@ -16,8 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
-import com.example.echolock.api.RetrofitClient
 import com.example.echolock.api.GenericResponse
+import com.example.echolock.api.RetrofitClient
+import com.example.echolock.session.UserSession
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,6 +31,8 @@ fun ForgotPasswordScreen(
 ) {
 
     var email by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
 
     Column(
@@ -74,15 +77,24 @@ fun ForgotPasswordScreen(
             label = { Text("Email Address") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            singleLine = true
+            singleLine = true,
+            enabled = !loading
         )
 
         Spacer(modifier = Modifier.height(30.dp))
 
         Button(
+            enabled = !loading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xFF005F73)),
             onClick = {
 
-                if (email.isBlank()) {
+                val cleanEmail = email.trim()
+
+                if (cleanEmail.isBlank()) {
                     Toast.makeText(
                         context,
                         "Please enter your email",
@@ -91,31 +103,42 @@ fun ForgotPasswordScreen(
                     return@Button
                 }
 
-                RetrofitClient.instance.sendOtp(email)
+                loading = true
+
+                RetrofitClient.instance.sendOtp(cleanEmail)
                     .enqueue(object : Callback<GenericResponse> {
 
                         override fun onResponse(
                             call: Call<GenericResponse>,
                             response: Response<GenericResponse>
                         ) {
+                            loading = false
+
                             val result = response.body()
+
                             if (result?.status == "success") {
+
+                                // ✅ SAVE EMAIL FOR NEXT SCREENS
+                                UserSession.resetEmail = cleanEmail
+
                                 Toast.makeText(
                                     context,
-                                    result.message,
+                                    result.message ?: "OTP sent",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                onVerifySend() // navigate to OTP screen
+
+                                onVerifySend()
                             } else {
                                 Toast.makeText(
                                     context,
-                                    result?.message ?: "Failed to send code",
+                                    result?.message ?: "Failed to send OTP",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
                         }
 
                         override fun onFailure(call: Call<GenericResponse>, t: Throwable) {
+                            loading = false
                             Toast.makeText(
                                 context,
                                 "Network error: ${t.message}",
@@ -123,18 +146,21 @@ fun ForgotPasswordScreen(
                             ).show()
                         }
                     })
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(55.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF005F73))
+            }
         ) {
-            Text(
-                text = "Send Verification Code",
-                color = Color.White,
-                fontSize = 16.sp
-            )
+            if (loading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(22.dp)
+                )
+            } else {
+                Text(
+                    text = "Send Verification Code",
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -83,9 +84,26 @@ fun EncryptMessageScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp),
-            placeholder = { Text("Type your secret message here...") },
-            isError = error != null
+            placeholder = {
+                Text(
+                    "Type your secret message here...",
+                    color = Color(0xFF8A9AA0)
+                )
+            },
+            isError = error != null,
+            textStyle = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xFF0A2E45) // 🔥 BRIGHT TEXT
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color(0xFF0A2E45),
+                unfocusedTextColor = Color(0xFF0A2E45),
+                focusedBorderColor = Color(0xFF005F73),
+                unfocusedBorderColor = Color(0xFFD0DBDF),
+                cursorColor = Color(0xFF005F73)
+            )
         )
+
 
         if (error != null) {
             Spacer(Modifier.height(6.dp))

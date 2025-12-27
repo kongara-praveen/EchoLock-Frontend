@@ -32,6 +32,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import com.example.echolock.util.HistoryTempStore
 
 @Composable
 fun SelectImageScreen(
@@ -49,6 +50,7 @@ fun SelectImageScreen(
         isUploading = true
 
         val file = uriToFile(context, uri)
+        HistoryTempStore.lastImageFileName = file.name
         val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
         val requestBody = file.asRequestBody(mimeType.toMediaType())
 

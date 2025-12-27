@@ -18,8 +18,6 @@ fun saveStegoImage(context: Context, bitmap: Bitmap): String {
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-
-            // ✅ THIS IS THE CRITICAL FIX
             put(
                 MediaStore.MediaColumns.RELATIVE_PATH,
                 Environment.DIRECTORY_DOWNLOADS + File.separator + "EchoLock"
@@ -27,7 +25,7 @@ fun saveStegoImage(context: Context, bitmap: Bitmap): String {
         }
 
         val uri = context.contentResolver.insert(
-            MediaStore.Downloads.EXTERNAL_CONTENT_URI, // ✅ NOT Images
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
             values
         ) ?: throw Exception("MediaStore insert failed")
 
@@ -38,7 +36,6 @@ fun saveStegoImage(context: Context, bitmap: Bitmap): String {
         return fileName
     }
 
-    // -------- Android 9 and below --------
     val dir = File(
         Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_DOWNLOADS

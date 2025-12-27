@@ -55,20 +55,45 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "Embed secret data inside image pixels using LSB algorithms\n" +
-                    "that remain invisible to the naked eye.",
+            text = "Embed secret data inside image pixels using LSB algorithms",
             fontSize = 15.sp, color = Color(0xFF5F7076), textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(75.dp))
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(7.dp).background(Color(0xFFD0DBDF), CircleShape))
-            Spacer(Modifier.width(8.dp))
-            Box(Modifier.width(38.dp).height(6.dp).background(Color(0xFF005F73), RoundedCornerShape(50)))
-            Spacer(Modifier.width(8.dp))
-            repeat(2) { Box(Modifier.size(7.dp).background(Color(0xFFD0DBDF), CircleShape)); Spacer(Modifier.width(8.dp)) }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            // ○ First (inactive)
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .background(Color(0xFFD0DBDF), CircleShape)
+            )
+
+            Spacer(Modifier.width(10.dp))
+
+            // ● Second (active)
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(Color(0xFF005F73), CircleShape)
+            )
+
+            Spacer(Modifier.width(10.dp))
+
+            // ○ Third (inactive)
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .background(Color(0xFFD0DBDF), CircleShape)
+            )
         }
+
+
 
         Spacer(modifier = Modifier.height(58.dp))
 
