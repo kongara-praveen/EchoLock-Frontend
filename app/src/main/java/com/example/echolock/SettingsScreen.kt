@@ -30,7 +30,9 @@ fun SettingsScreen(
     onHomeClick: () -> Unit,
     onFilesClick: () -> Unit,
     onHistoryClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onFileStorageClick: () -> Unit,      // ✅ ADD
+    onNotificationsClick: () -> Unit
 ) {
 
     var selectedTab by remember { mutableStateOf(3) }
@@ -76,8 +78,18 @@ fun SettingsScreen(
                         onClick = { onAppThemeClick() }
                     )
 
-                    SettingItem(Icons.Filled.Folder, "File Storage")
-                    SettingItem(Icons.Filled.Notifications, "Notifications")
+                    SettingItem(
+                        Icons.Filled.Folder,
+                        "File Storage",
+                        onClick = { onFileStorageClick() }
+                    )
+
+                    SettingItem(
+                        Icons.Filled.Notifications,
+                        "Notifications",
+                        onClick = { onNotificationsClick() }
+                    )
+
                 }
             }
 

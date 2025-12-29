@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // ---------- COMPOSE ----------
     implementation(platform(libs.androidx.compose.bom))

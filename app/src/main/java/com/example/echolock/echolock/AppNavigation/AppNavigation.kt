@@ -92,6 +92,8 @@ sealed class Screen(val route: String) {
     object TamperProgress : Screen("tamper_progress/{fileUri}")
     object TamperResult : Screen("tamper_result/{isSafe}/{fileName}")
     object AppTheme : Screen("app_theme")
+    object FileStorage : Screen("file_storage")
+    object Notifications : Screen("notifications")
 
 }
 
@@ -266,8 +268,13 @@ fun AppNavigation() {
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onBack = { navController.navigate(Screen.Dashboard.route) },
-                onEditProfileClick = { navController.navigate(Screen.EditProfile.route) },
-                onChangePasswordClick = { navController.navigate(Screen.ChangePassword.route) },
+                onEditProfileClick = {
+                    if (UserSession.email.isNotBlank()) {
+                        navController.navigate(Screen.EditProfile.route)
+                    }
+                },
+
+                        onChangePasswordClick = { navController.navigate(Screen.ChangePassword.route) },
                 onAboutClick = { navController.navigate(Screen.About.route) },
                 onFaqClick = { navController.navigate(Screen.Faq.route) },
                 onLogoutClick = { navController.navigate(Screen.Logout.route) },
@@ -275,6 +282,9 @@ fun AppNavigation() {
                 onHomeClick = { navController.navigate(Screen.Dashboard.route) },
                 onFilesClick = { navController.navigate(Screen.Files.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
+                onFileStorageClick = { navController.navigate(Screen.FileStorage.route) },
+                onNotificationsClick = { navController.navigate(Screen.Notifications.route) },
+
                 onSettingsClick = {}
             )
         }
@@ -522,11 +532,12 @@ fun AppNavigation() {
         /* EDIT PROFILE */
         composable(Screen.EditProfile.route) {
             EditProfileScreen(
-                userEmail = UserSession.email,   // 🔥 PASS LOGGED-IN EMAIL
                 onBack = { navController.popBackStack() },
-                onSave = { navController.popBackStack() }
+
             )
+
         }
+
 
 
         /* CHANGE PASSWORD */
@@ -619,6 +630,13 @@ fun AppNavigation() {
             )
         }
 
+        composable(Screen.FileStorage.route) {
+            FileStorageScreen { navController.popBackStack() }
+        }
+
+        composable(Screen.Notifications.route) {
+            NotificationsScreen { navController.popBackStack() }
+        }
 
 
     }

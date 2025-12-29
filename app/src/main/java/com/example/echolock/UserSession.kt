@@ -7,6 +7,8 @@ object UserSession {
     var userId: String = ""
     var email: String = ""
     var resetEmail: String = ""
+    var name: String = ""
+    var profileImage: String = ""
 
     // 🔐 SERVER ISSUED TOKEN (CRITICAL FOR TAMPER CHECK)
     var serverToken: String = ""

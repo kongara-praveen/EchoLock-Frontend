@@ -63,8 +63,7 @@ fun UserAccessScreen(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            "The professional standard for steganography and media\n" +
-                    "integrity verification.",
+            "The professional standard for steganography integrity verification.",
             fontSize = 15.sp,
             color = Color(0xFF5F7076),
             textAlign = TextAlign.Center

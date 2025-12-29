@@ -198,6 +198,8 @@ fun LoginScreen(
 
                                 // 🔥 SAVE SESSION EMAIL
                                 UserSession.email = cleanEmail
+                                  // name from backend
+
 
                                 Toast.makeText(
                                     context,

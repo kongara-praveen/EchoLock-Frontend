@@ -50,12 +50,31 @@ interface ApiService {
         @Field("email") email: String
     ): Call<ProfileResponse>
 
+
+    @FormUrlEncoded
+    @POST("verify_password.php")
+    fun verifyPassword(
+        @Field("email") email: String,
+        @Field("password") password: String
+    ): Call<GenericResponse>
+
     @FormUrlEncoded
     @POST("update_profile.php")
     fun updateProfile(
-        @Field("name") name: String,
-        @Field("email") email: String
+        @Field("old_email") oldEmail: String,
+        @Field("email") email: String,
+        @Field("full_name") fullName: String
     ): Call<GenericResponse>
+
+
+
+    @Multipart
+    @POST("upload_profile_image.php")
+    fun uploadProfileImage(
+        @Part image: MultipartBody.Part,
+        @Part("email") email: RequestBody
+    ): Call<GenericResponse>
+
 
     @FormUrlEncoded
     @POST("change_password.php")
