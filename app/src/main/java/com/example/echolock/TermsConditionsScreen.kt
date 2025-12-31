@@ -1,26 +1,39 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun TermsConditionsScreen(onBack: () -> Unit) {
 
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 22.dp, vertical = 18.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
 
         // ---------------- Header Row ---------------- //
@@ -39,9 +52,9 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
 
             Text(
                 text = "Terms & Conditions",
-                fontSize = 20.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF062A2F)
+                color = AppColors.TextPrimary
             )
         }
 
@@ -92,7 +105,17 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
 
 @Composable
 fun TermSection(title: String, body: String) {
-    Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF062A2F))
+    Text(
+        text = title,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        color = AppColors.TextPrimary
+    )
     Spacer(Modifier.height(6.dp))
-    Text(text = body, fontSize = 14.sp, color = Color(0xFF67777D), lineHeight = 19.sp)
+    Text(
+        text = body,
+        fontSize = 14.sp,
+        color = AppColors.TextSecondary,
+        lineHeight = 20.sp
+    )
 }

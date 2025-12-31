@@ -3,6 +3,7 @@ package com.example.echolock.ui.screens
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -12,8 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.ImageSteganography
 import kotlinx.coroutines.delay
 
@@ -53,9 +59,41 @@ fun ImageDecryptionProgressScreen(
             }
 
             // 🔓 REAL DECRYPTION (UPDATED)
-            val decodedResult = ImageSteganography.decode(bitmap)
+            val password = UserSession.decryptImagePassword
+            val decodedResult = ImageSteganography.decode(bitmap, password)
 
-            if (decodedResult == null || decodedResult.message.isBlank()) {
+            if (decodedResult == null) {
+                Toast.makeText(
+                    context,
+                    "No hidden message found in this image",
+                    Toast.LENGTH_LONG
+                ).show()
+                onFailed()
+                return@LaunchedEffect
+            }
+
+            // Check for password errors
+            if (decodedResult.message == "WRONG_PASSWORD") {
+                Toast.makeText(
+                    context,
+                    "Wrong password",
+                    Toast.LENGTH_LONG
+                ).show()
+                onFailed()
+                return@LaunchedEffect
+            }
+
+            if (decodedResult.message == "PASSWORD_REQUIRED") {
+                Toast.makeText(
+                    context,
+                    "Password required",
+                    Toast.LENGTH_LONG
+                ).show()
+                onFailed()
+                return@LaunchedEffect
+            }
+
+            if (decodedResult.message.isBlank()) {
                 Toast.makeText(
                     context,
                     "No hidden message found in this image",
@@ -79,31 +117,44 @@ fun ImageDecryptionProgressScreen(
         }
     }
 
+    // Animation for progress
+    val progressAlpha by animateFloatAsState(
+        targetValue = if (progress > 0) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "progress_alpha"
+    )
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppColors.Background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
         CircularProgressIndicator(
             progress = progress / 100f,
-            color = Color(0xFF005F73),
+            color = AppColors.PrimaryDark,
             strokeWidth = 6.dp,
-            modifier = Modifier.size(110.dp)
+            modifier = Modifier
+                .size(110.dp)
+                .alpha(progressAlpha)
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
 
         Text(
             text = "$progress%",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = AppColors.TextPrimary
         )
+
+        Spacer(Modifier.height(8.dp))
 
         Text(
             text = "Decrypting image...",
-            fontSize = 15.sp,
-            color = Color.Gray
+            fontSize = 16.sp,
+            color = AppColors.TextSecondary
         )
     }
 }

@@ -1,7 +1,11 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -10,10 +14,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun FAQScreen(onBack: () -> Unit) {
@@ -32,10 +38,19 @@ fun FAQScreen(onBack: () -> Unit) {
                 "We use military-grade AES-256 encryption combined with advanced steganography algorithms."
     )
 
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(22.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -47,7 +62,12 @@ fun FAQScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.width(12.dp))
 
-            Text("FAQ", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "FAQ",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppColors.TextPrimary
+            )
         }
 
         Spacer(Modifier.height(20.dp))
@@ -63,34 +83,63 @@ fun FAQScreen(onBack: () -> Unit) {
 fun FAQItem(question: String, answer: String) {
     var expanded by remember { mutableStateOf(false) }
 
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = !expanded }
+            .clickable { expanded = !expanded },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = AppColors.Surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 4.dp
+        )
     ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    question,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppColors.TextPrimary,
+                    modifier = Modifier.weight(1f)
+                )
 
-            Text(
-                question,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = AppColors.PrimaryDark
+                )
+            }
 
-            Icon(
-                imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                contentDescription = null,
-                tint = Color.Gray
-            )
-        }
-
-        if (expanded) {
-            Spacer(Modifier.height(8.dp))
-            Text(answer, fontSize = 14.sp, color = Color.Gray)
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(
+                    animationSpec = tween(300),
+                    expandFrom = Alignment.Top
+                ),
+                exit = shrinkVertically(
+                    animationSpec = tween(300),
+                    shrinkTowards = Alignment.Top
+                )
+            ) {
+                Column {
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        answer,
+                        fontSize = 14.sp,
+                        color = AppColors.TextSecondary,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,12 +14,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.echolock.R
 import com.example.echolock.model.HistoryItem
 import com.example.echolock.ui.common.BottomNavBar
+import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.viewmodel.HistoryViewModel
 
 @Composable
@@ -38,41 +45,52 @@ fun HistoryScreen(
 
     // Load history from backend
     LaunchedEffect(Unit) {
-        viewModel.loadHistory(userId = 1)
+        val userId = com.example.echolock.session.UserSession.userId.toIntOrNull() ?: 1
+        viewModel.loadHistory(userId = userId)
     }
+
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(AppColors.Background)
+            .alpha(alpha)
     ) {
-
         /* ---------------- CONTENT AREA ---------------- */
         Column(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 20.dp)
         ) {
-
             Spacer(Modifier.height(20.dp))
 
             /* ---------------- TOP BAR ---------------- */
-            Row(verticalAlignment = Alignment.CenterVertically) {
-
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = null,
                     modifier = Modifier
                         .size(28.dp)
-                        .clickable { onBack() }
+                        .clickable { onBack() },
+                    tint = AppColors.TextPrimary
                 )
 
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(12.dp))
 
                 Text(
                     text = "History",
                     fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.TextPrimary
                 )
 
                 Spacer(Modifier.weight(1f))
@@ -148,11 +166,26 @@ fun SectionTitle(text: String) {
 @Composable
 fun HistoryCard(item: HistoryItem) {
 
-    val icon = when (item.action) {
-        "Encrypted" -> Icons.Filled.Lock
-        "Decrypted" -> Icons.Filled.LockOpen
-        "Tamper Check" -> Icons.Filled.Warning
-        else -> Icons.Filled.Info
+    // Determine file type from action or file extension
+    val isImageFile = item.action.contains("Image", ignoreCase = true) || 
+                     item.fileName.endsWith(".png", ignoreCase = true) ||
+                     item.fileName.endsWith(".jpg", ignoreCase = true) ||
+                     item.fileName.endsWith(".jpeg", ignoreCase = true) ||
+                     item.fileName.endsWith(".webp", ignoreCase = true)
+    
+    val isAudioFile = item.action.contains("Audio", ignoreCase = true) ||
+                     item.fileName.endsWith(".wav", ignoreCase = true) ||
+                     item.fileName.endsWith(".mp3", ignoreCase = true) ||
+                     item.fileName.endsWith(".m4a", ignoreCase = true)
+
+    // Format action text
+    val formattedAction = remember(item.action) {
+        when {
+            item.action.contains("Encrypted", ignoreCase = true) -> "Encryption Successful"
+            item.action.contains("Decrypted", ignoreCase = true) -> "Decryption Successful"
+            item.action.contains("Tamper Check", ignoreCase = true) -> item.action // Keep tamper check as is
+            else -> item.action // Keep other actions as is
+        }
     }
 
     Card(
@@ -165,12 +198,43 @@ fun HistoryCard(item: HistoryItem) {
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = Color(0xFF006D77)
-            )
+            // Icon with circular background
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        Color(0xFF006D77),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                when {
+                    isImageFile -> {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_image),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.White
+                        )
+                    }
+                    isAudioFile -> {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_music),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.White
+                        )
+                    }
+                    else -> {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
 
             Spacer(Modifier.width(12.dp))
 
@@ -181,18 +245,11 @@ fun HistoryCard(item: HistoryItem) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "${item.action} • ${item.time}",
+                    "$formattedAction • ${item.time}",
                     color = Color.Gray,
                     fontSize = 13.sp
                 )
             }
-
-            Icon(
-                imageVector = Icons.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = Color.Gray
-            )
         }
     }
 }

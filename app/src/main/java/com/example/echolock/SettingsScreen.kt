@@ -13,9 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.ui.common.BottomNavBar
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun SettingsScreen(
@@ -37,24 +41,36 @@ fun SettingsScreen(
 
     var selectedTab by remember { mutableStateOf(3) }
 
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(AppColors.Background)
+            .alpha(alpha)
     ) {
-
         Row(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Filled.ArrowBack,
                 contentDescription = null,
-                modifier = Modifier.size(26.dp).clickable { onBack() },
-                tint = Color.Black
+                modifier = Modifier.size(28.dp).clickable { onBack() },
+                tint = AppColors.TextPrimary
             )
             Spacer(Modifier.width(12.dp))
-            Text("Settings", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "Settings",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppColors.TextPrimary
+            )
         }
 
         LazyColumn(
@@ -157,14 +173,14 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
             text = title,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF7A8893),
+            color = AppColors.TextSecondary,
             modifier = Modifier.padding(vertical = 10.dp)
         )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = AppColors.Surface)
         ) {
             Column(Modifier.padding(12.dp)) { content() }
         }
@@ -182,10 +198,10 @@ fun SettingItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: St
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Icon(icon, null, tint = Color(0xFF005F73), modifier = Modifier.size(24.dp))
+        Icon(icon, null, tint = AppColors.PrimaryDark, modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(14.dp))
-        Text(label, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+        Text(label, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
         Spacer(Modifier.weight(1f))
-        Icon(Icons.Filled.KeyboardArrowRight, null, tint = Color.Gray)
+        Icon(Icons.Filled.KeyboardArrowRight, null, tint = AppColors.TextSecondary)
     }
 }

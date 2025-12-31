@@ -1,6 +1,7 @@
 package com.example.echolock.ui.screens
 
-// 🔥 Required Imports (DON’T MISS)
+// 🔥 Required Imports (DON'T MISS)
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,9 +11,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -20,13 +22,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
 
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(AppColors.Background)
+            .alpha(alpha)
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -36,7 +48,7 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
         Box(
             modifier = Modifier
                 .size(255.dp)
-                .background(Color(0xFFEFFBFB), CircleShape),
+                .background(AppColors.PrimaryLight.copy(alpha = 0.2f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -49,14 +61,14 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
         Spacer(modifier = Modifier.height(55.dp))
 
         Text("Hide Messages in Images",
-            fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color(0xFF0A2E45)
+            fontSize = 22.sp, fontWeight = FontWeight.Black, color = AppColors.TextPrimary
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
             text = "Embed secret data inside image pixels using LSB algorithms",
-            fontSize = 15.sp, color = Color(0xFF5F7076), textAlign = TextAlign.Center
+            fontSize = 15.sp, color = AppColors.TextSecondary, textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(75.dp))
@@ -71,7 +83,7 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(7.dp)
-                    .background(Color(0xFFD0DBDF), CircleShape)
+                    .background(AppColors.BorderLight, CircleShape)
             )
 
             Spacer(Modifier.width(10.dp))
@@ -80,7 +92,7 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(10.dp)
-                    .background(Color(0xFF005F73), CircleShape)
+                    .background(AppColors.PrimaryDark, CircleShape)
             )
 
             Spacer(Modifier.width(10.dp))
@@ -89,7 +101,7 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(7.dp)
-                    .background(Color(0xFFD0DBDF), CircleShape)
+                    .background(AppColors.BorderLight, CircleShape)
             )
         }
 
@@ -100,14 +112,18 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
         Button(
             onClick = onContinue,
             modifier = Modifier.fillMaxWidth().height(55.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF005F73)),
-            shape = RoundedCornerShape(12.dp)
-        ) { Text("Continue", color = Color.White, fontSize = 17.sp) }
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
+        ) { Text("Continue", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold) }
 
         Spacer(modifier = Modifier.height(18.dp))
 
         Text("Skip",
-            color = Color(0xFF7D8C92),
+            color = AppColors.TextSecondary,
             fontSize = 14.sp,
             modifier = Modifier.clickable { onSkip() }
         )

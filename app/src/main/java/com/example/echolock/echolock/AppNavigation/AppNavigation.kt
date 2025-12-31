@@ -89,11 +89,15 @@ sealed class Screen(val route: String) {
     object PasswordUpdatedSuccess : Screen("password_updated_success")
     // TAMPER CHECK
     object TamperUpload : Screen("tamper_upload")
-    object TamperProgress : Screen("tamper_progress/{fileUri}")
-    object TamperResult : Screen("tamper_result/{isSafe}/{fileName}")
+    object TamperProgress : Screen("tamper_progress/{fileUri}/{fileName}")
+    object TamperResult : Screen("tamper_result/{isSafe}/{fileName}/{fileUri}")
     object AppTheme : Screen("app_theme")
     object FileStorage : Screen("file_storage")
     object Notifications : Screen("notifications")
+    
+    // FILE DETAILS
+    object AudioFileDetail : Screen("audio_file_detail")
+    object ImageFileDetail : Screen("image_file_detail")
 
 }
 
@@ -249,8 +253,43 @@ fun AppNavigation() {
                 onBack = { navController.popBackStack() },
                 onHomeClick = { navController.navigate(Screen.Dashboard.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
-                onSettingsClick = { navController.navigate(Screen.Settings.route) }
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                onFileClick = { file ->
+                    UserSession.selectedFile = file
+                    if (file.type == "audio") {
+                        navController.navigate(Screen.AudioFileDetail.route)
+                    } else {
+                        navController.navigate(Screen.ImageFileDetail.route)
+                    }
+                }
             )
+        }
+        
+        /* FILE DETAILS */
+        composable(Screen.AudioFileDetail.route) {
+            UserSession.selectedFile?.let { file ->
+                AudioFileDetailScreen(
+                    file = file,
+                    onBack = { navController.popBackStack() },
+                    onDelete = {
+                        // Delete will be handled by FilesViewModel
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
+        
+        composable(Screen.ImageFileDetail.route) {
+            UserSession.selectedFile?.let { file ->
+                ImageFileDetailScreen(
+                    file = file,
+                    onBack = { navController.popBackStack() },
+                    onDelete = {
+                        // Delete will be handled by FilesViewModel
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         /* HISTORY */
@@ -563,9 +602,9 @@ fun AppNavigation() {
         composable(Screen.TamperUpload.route) {
             TamperCheckScreen(
                 onBack = { navController.popBackStack() },
-                onStartCheck = { uri ->
+                onStartCheck = { uri, fileName ->
                     navController.navigate(
-                        "tamper_progress/${Uri.encode(uri.toString())}"
+                        "tamper_progress/${Uri.encode(uri.toString())}/${Uri.encode(fileName ?: "")}"
                     )
                 }
             )
@@ -574,18 +613,23 @@ fun AppNavigation() {
 
         composable(
             route = Screen.TamperProgress.route,
-            arguments = listOf(navArgument("fileUri") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("fileUri") { type = NavType.StringType },
+                navArgument("fileName") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
 
             val uri = Uri.parse(
                 backStackEntry.arguments!!.getString("fileUri")!!
             )
+            val fileName = backStackEntry.arguments!!.getString("fileName") ?: ""
 
             TamperCheckProgressScreen(
                 fileUri = uri,
-                onResult = { isSafe, fileName ->
+                originalFileName = if (fileName.isBlank()) null else fileName,
+                onResult = { isSafe, resultFileName ->
                     navController.navigate(
-                        "tamper_result/$isSafe/${Uri.encode(fileName)}"
+                        "tamper_result/$isSafe/${Uri.encode(resultFileName)}/${Uri.encode(uri.toString())}"
                     ) {
                         // 🔥 THIS PREVENTS APP CLOSE
                         popUpTo(Screen.TamperProgress.route) {
@@ -604,21 +648,29 @@ fun AppNavigation() {
             route = Screen.TamperResult.route,
             arguments = listOf(
                 navArgument("isSafe") { type = NavType.BoolType },
-                navArgument("fileName") { type = NavType.StringType }
+                navArgument("fileName") { type = NavType.StringType },
+                navArgument("fileUri") { type = NavType.StringType }
             )
         ) { backStackEntry ->
 
+            val fileUriString = backStackEntry.arguments!!.getString("fileUri")!!
+            val fileUri = Uri.parse(fileUriString)
+            val originalFileName = backStackEntry.arguments!!.getString("fileName")!!
+
             TamperCheckCompleteScreen(
                 isSafe = backStackEntry.arguments!!.getBoolean("isSafe"),
-                fileName = backStackEntry.arguments!!.getString("fileName")!!,
+                fileName = originalFileName,
                 onBackDashboard = {
                     navController.navigate(Screen.Dashboard.route) {
                         popUpTo(Screen.Dashboard.route) { inclusive = true }
                     }
                 },
                 onCheckAgain = {
-                    navController.navigate(Screen.TamperUpload.route) {
-                        popUpTo(Screen.Dashboard.route) { inclusive = false }
+                    // Navigate directly to progress screen with the same file
+                    navController.navigate(
+                        "tamper_progress/${Uri.encode(fileUri.toString())}/${Uri.encode(originalFileName)}"
+                    ) {
+                        popUpTo(Screen.TamperResult.route) { inclusive = true }
                     }
                 }
             )

@@ -4,13 +4,14 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,9 +19,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.api.RetrofitClient
+import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.HistoryTempStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,10 +44,11 @@ fun ImageEncryptionCompleteScreen(
     LaunchedEffect(key1 = imageName) {
         try {
             withContext(Dispatchers.IO) {
+                val userId = UserSession.userId.toIntOrNull() ?: 1
                 RetrofitClient.instance.addHistory(
-                    userId = 1,           // TODO replace with logged-in user
+                    userId = userId,
                     fileName = imageName,
-                    action = "Encrypted"
+                    action = "Encrypted Image"
                 )
             }
 
@@ -53,58 +60,78 @@ fun ImageEncryptionCompleteScreen(
         }
     }
 
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(28.dp),
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 28.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
-            tint = Color(0xFF00A86B),
+            tint = AppColors.Success,
             modifier = Modifier.size(110.dp)
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
 
         Text(
             text = "Encryption Complete",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = AppColors.TextPrimary
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
 
         Text(
             text = "Your message has been securely hidden within the image.",
             textAlign = TextAlign.Center,
-            fontSize = 15.sp
+            fontSize = 16.sp,
+            color = AppColors.TextSecondary
         )
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(Modifier.height(32.dp))
 
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005F73)),
-            shape = RoundedCornerShape(12.dp),
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            ),
             onClick = {
                 downloadEncryptedImage(context, imageName)
             }
         ) {
-            Text("Download Image", color = Color.White)
+            Text("Download Image", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         }
 
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(Modifier.height(16.dp))
 
         Text(
             text = "Back to Dashboard",
-            color = Color(0xFF005F73),
-            modifier = Modifier.clickable { onBackDashboard() }
+            color = AppColors.PrimaryDark,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.clickable { 
+                // Clear image encryption session
+                UserSession.clearImageSession()
+                onBackDashboard() 
+            }
         )
     }
 }

@@ -1,6 +1,7 @@
 package com.example.echolock.ui.screens
 
 // ===================== REQUIRED IMPORTS =====================
+import androidx.compose.animation.core.*
 import androidx.compose.ui.text.TextStyle
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.echolock.api.GenericResponse
 import com.example.echolock.api.RetrofitClient
 import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -46,10 +49,19 @@ fun ChangePasswordScreen(
     var newVisible by remember { mutableStateOf(false) }
     var confirmVisible by remember { mutableStateOf(false) }
 
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
 
         /* ---------- HEADER ---------- */
@@ -68,14 +80,15 @@ fun ChangePasswordScreen(
             Text(
                 "Change Password",
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = AppColors.TextPrimary
             )
         }
 
         Spacer(modifier = Modifier.height(26.dp))
 
         /* ---------- CURRENT PASSWORD ---------- */
-        Text("Current Password", fontWeight = FontWeight.Medium)
+        Text("Current Password", fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
 
         OutlinedTextField(
             value = currentPassword,
@@ -98,15 +111,18 @@ fun ChangePasswordScreen(
                 )
             },
             textStyle = TextStyle(
-                fontSize = 15.sp,
-                color = Color(0xFF0A2E45) // 🔥 BRIGHT TEXT
+                fontSize = 16.sp,
+                color = AppColors.TextPrimary,
+                fontWeight = FontWeight.Normal
             ),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color(0xFF0A2E45),
-                unfocusedTextColor = Color(0xFF0A2E45),
-                focusedBorderColor = Color(0xFF005F73),
-                unfocusedBorderColor = Color(0xFFD0DBDF),
-                cursorColor = Color(0xFF005F73)
+                focusedTextColor = AppColors.TextPrimary,
+                unfocusedTextColor = AppColors.TextPrimary,
+                focusedBorderColor = AppColors.PrimaryDark,
+                unfocusedBorderColor = AppColors.BorderLight,
+                cursorColor = AppColors.PrimaryDark,
+                focusedPlaceholderColor = AppColors.TextTertiary,
+                unfocusedPlaceholderColor = AppColors.TextTertiary
             )
         )
 
@@ -114,7 +130,7 @@ fun ChangePasswordScreen(
         Spacer(modifier = Modifier.height(18.dp))
 
         /* ---------- NEW PASSWORD ---------- */
-        Text("New Password", fontWeight = FontWeight.Medium)
+        Text("New Password", fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
 
         OutlinedTextField(
             value = newPassword,
@@ -153,7 +169,7 @@ fun ChangePasswordScreen(
         Spacer(modifier = Modifier.height(18.dp))
 
         /* ---------- CONFIRM PASSWORD ---------- */
-        Text("Confirm New Password", fontWeight = FontWeight.Medium)
+        Text("Confirm New Password", fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
 
         OutlinedTextField(
             value = confirmPassword,
@@ -195,7 +211,7 @@ fun ChangePasswordScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFEFF6FF), RoundedCornerShape(14.dp))
+                .background(AppColors.Info.copy(alpha = 0.1f), RoundedCornerShape(14.dp))
                 .padding(16.dp)
         ) {
             Column {
@@ -203,7 +219,7 @@ fun ChangePasswordScreen(
                     text = "New Password must contain:",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = Color(0xFF0F172A)
+                    color = AppColors.TextPrimary
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -281,11 +297,15 @@ fun ChangePasswordScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005F73)),
-            shape = RoundedCornerShape(12.dp)
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
         ) {
-            Text("Update Password", color = Color.White, fontSize = 16.sp)
+            Text("Update Password", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -297,7 +317,7 @@ fun RequirementItem(text: String) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        Text("• ", fontWeight = FontWeight.Bold, color = Color(0xFF1E3A8A))
-        Text(text, fontSize = 14.sp, color = Color(0xFF1E3A8A))
+        Text("• ", fontWeight = FontWeight.Bold, color = AppColors.Info)
+        Text(text, fontSize = 14.sp, color = AppColors.Info)
     }
 }

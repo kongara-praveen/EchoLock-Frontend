@@ -1,5 +1,7 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,14 +13,19 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
 import com.example.echolock.ui.common.BottomNavBar
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun DashboardScreen(
@@ -35,35 +42,44 @@ fun DashboardScreen(
 
     var selectedTab by remember { mutableStateOf(0) }   // Home selected
 
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(AppColors.Background)
+            .alpha(alpha)
     ) {
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(22.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
 
             Text(
                 text = "Welcome back",
-                fontSize = 26.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0A2E45)
+                color = AppColors.TextPrimary
             )
 
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
 
             Text(
                 text = "What would you like to do today?",
-                color = Color(0xFF6D7F85),
-                fontSize = 15.sp
+                color = AppColors.TextSecondary,
+                fontSize = 15.sp,
+                lineHeight = 22.sp
             )
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(32.dp))
 
             DashboardTile(
                 icon = R.drawable.ic_mic,
@@ -97,12 +113,12 @@ fun DashboardScreen(
 
             Text(
                 text = "Quick Actions",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0A2E45)
+                color = AppColors.TextPrimary
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -112,13 +128,17 @@ fun DashboardScreen(
                 QuickBox(
                     text = "Decrypt Audio",
                     icon = R.drawable.ic_mic,
-                    onClick = onDecryptAudio
+                    onClick = onDecryptAudio,
+                    modifier = Modifier.weight(1f)
                 )
+
+                Spacer(Modifier.width(12.dp))
 
                 QuickBox(
                     text = "Decrypt Image",
                     icon = R.drawable.ic_image,
-                    onClick = onDecryptImage
+                    onClick = onDecryptImage,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -144,57 +164,83 @@ fun DashboardScreen(
 
 @Composable
 fun DashboardTile(icon: Int, title: String, subtitle: String, bg: Color, onClick: () -> Unit) {
+    var isPressed by remember { mutableStateOf(false) }
+    
+    // Reset pressed state after animation
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            delay(150)
+            isPressed = false
+        }
+    }
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "tile_scale"
+    )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .scale(scale)
+            .clickable(onClick = {
+                isPressed = true
+                onClick()
+            }),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(0.dp)
+        colors = CardDefaults.cardColors(containerColor = AppColors.Surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp, pressedElevation = 1.dp)
     ) {
 
         Row(
-            modifier = Modifier.padding(18.dp),
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
             Box(
                 modifier = Modifier
-                    .size(50.dp)
+                    .size(56.dp)
                     .background(bg, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
                     painter = painterResource(id = icon),
                     contentDescription = null,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
 
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    fontSize = 16.sp,
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF062A2F)
+                    color = AppColors.TextPrimary
                 )
+
+                Spacer(Modifier.height(4.dp))
 
                 Text(
                     text = subtitle,
                     fontSize = 13.sp,
-                    color = Color(0xFF6B7E80)
+                    color = AppColors.TextSecondary,
+                    lineHeight = 18.sp
                 )
             }
 
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.width(8.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.ic_arrow),
                 contentDescription = null,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(24.dp),
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(AppColors.TextSecondary)
             )
         }
     }
@@ -205,36 +251,71 @@ fun DashboardTile(icon: Int, title: String, subtitle: String, bg: Color, onClick
 /*───────────────────────────────────────────────────────────────*/
 
 @Composable
-fun QuickBox(text: String, icon: Int, onClick: () -> Unit) {
+fun QuickBox(
+    text: String,
+    icon: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isPressed by remember { mutableStateOf(false) }
+    
+    // Reset pressed state after animation
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            delay(150)
+            isPressed = false
+        }
+    }
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "quickbox_scale"
+    )
 
-    Column(
-        modifier = Modifier
-            .width(160.dp)
-            .background(Color(0xFFF5F9FA), RoundedCornerShape(16.dp))
-            .clickable { onClick() }
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        modifier = modifier
+            .scale(scale)
+            .clickable(onClick = {
+                isPressed = true
+                onClick()
+            }),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = AppColors.CardElevated),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp, pressedElevation = 1.dp)
     ) {
-
-        Box(
+        Column(
             modifier = Modifier
-                .size(50.dp)
-                .background(Color(0xFFE2ECEC), CircleShape),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = icon),
-                contentDescription = null,
-                modifier = Modifier.size(26.dp)
+
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(AppColors.PrimaryLight.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                text = text,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = AppColors.TextPrimary,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
-
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
-        )
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,12 +22,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
 import com.example.echolock.api.GenericResponse
 import com.example.echolock.api.RegisterResponse
 import com.example.echolock.api.RetrofitClient
+import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,176 +46,188 @@ fun CreateAccountScreen(
     onTermsClick: () -> Unit,
     onPrivacyClick: () -> Unit
 ) {
-
-    /* ---------- COLORS ---------- */
-    val inputTextColor = Color(0xFF0A2E45)
-    val borderColor = Color(0xFFD0DBDF)
-    val primaryColor = Color(0xFF005F73)
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
 
     /* ---------- STATE ---------- */
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    var fullName by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
 
-    var otp by remember { mutableStateOf("") }
-    var otpSent by remember { mutableStateOf(false) }
-    var otpVerified by remember { mutableStateOf(false) }
+    var otp by rememberSaveable { mutableStateOf("") }
+    var otpSent by rememberSaveable { mutableStateOf(false) }
+    var otpVerified by rememberSaveable { mutableStateOf(false) }
 
-    var isTermsAccepted by remember { mutableStateOf(false) }
+    var isTermsAccepted by rememberSaveable { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
 
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
 
-    /* ---------- BACKGROUND ---------- */
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFFF7FBFD),
-                        Color(0xFFEFF6F8)
-                    )
-                )
-            )
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 26.dp),
-            horizontalAlignment = Alignment.Start
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-
-            Spacer(Modifier.height(25.dp))
-
-            Image(
+            Icon(
                 painter = painterResource(R.drawable.ic_back),
                 contentDescription = "Back",
                 modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onBack() }
+                    .size(28.dp)
+                    .clickable { onBack() },
+                tint = AppColors.TextPrimary
             )
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(
+                    "Create Account",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.TextPrimary
+                )
+                Text(
+                    "Join EchoLock securely",
+                    fontSize = 14.sp,
+                    color = AppColors.TextSecondary
+                )
+            }
+        }
 
-            Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
 
-            Text(
-                "Create Account",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = inputTextColor
-            )
+        /* ---------- COMMON FIELD COLORS ---------- */
+        val fieldColors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = AppColors.TextPrimary,
+            unfocusedTextColor = AppColors.TextPrimary,
+            focusedBorderColor = AppColors.PrimaryDark,
+            unfocusedBorderColor = AppColors.BorderLight,
+            cursorColor = AppColors.PrimaryDark,
+            focusedPlaceholderColor = AppColors.TextTertiary,
+            unfocusedPlaceholderColor = AppColors.TextTertiary
+        )
 
-            Text(
-                "Join EchoLock securely",
-                color = Color(0xFF6B7E80)
-            )
-
-            Spacer(Modifier.height(25.dp))
-
-            /* ---------- COMMON FIELD COLORS ---------- */
-            val fieldColors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = inputTextColor,
-                unfocusedTextColor = inputTextColor,
-                focusedBorderColor = primaryColor,
-                unfocusedBorderColor = borderColor,
-                cursorColor = primaryColor
-            )
-
-            val fieldTextStyle = TextStyle(
-                fontSize = 15.sp,
-                color = inputTextColor
-            )
+        val fieldTextStyle = TextStyle(
+            fontSize = 16.sp,
+            color = AppColors.TextPrimary,
+            fontWeight = FontWeight.Normal
+        )
 
             /* ---------- INPUTS ---------- */
 
-            OutlinedTextField(
-                value = fullName,
-                onValueChange = { fullName = it },
-                label = { Text("Full Name") },
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = fieldTextStyle,
-                colors = fieldColors
-            )
+        OutlinedTextField(
+            value = fullName,
+            onValueChange = { fullName = it },
+            label = { Text("Full Name", color = AppColors.TextSecondary) },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = fieldTextStyle,
+            colors = fieldColors,
+            shape = RoundedCornerShape(14.dp)
+        )
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email Address") },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !otpSent,
-                textStyle = fieldTextStyle,
-                colors = fieldColors
-            )
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email Address", color = AppColors.TextSecondary) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !otpSent,
+            textStyle = fieldTextStyle,
+            colors = fieldColors,
+            shape = RoundedCornerShape(14.dp)
+        )
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation =
-                    if (passwordVisible) VisualTransformation.None
-                    else PasswordVisualTransformation(),
-                trailingIcon = {
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password", color = AppColors.TextSecondary) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            visualTransformation =
+                if (passwordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         imageVector = if (passwordVisible)
                             Icons.Filled.VisibilityOff
                         else Icons.Filled.Visibility,
                         contentDescription = null,
-                        modifier = Modifier.clickable {
-                            passwordVisible = !passwordVisible
-                        }
+                        tint = AppColors.TextSecondary
                     )
-                },
-                textStyle = fieldTextStyle,
-                colors = fieldColors
-            )
+                }
+            },
+            textStyle = fieldTextStyle,
+            colors = fieldColors,
+            shape = RoundedCornerShape(14.dp)
+        )
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation =
-                    if (confirmPasswordVisible)
-                        VisualTransformation.None
-                    else PasswordVisualTransformation(),
-                trailingIcon = {
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Confirm Password", color = AppColors.TextSecondary) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            visualTransformation =
+                if (confirmPasswordVisible)
+                    VisualTransformation.None
+                else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
                         imageVector = if (confirmPasswordVisible)
                             Icons.Filled.VisibilityOff
                         else Icons.Filled.Visibility,
                         contentDescription = null,
-                        modifier = Modifier.clickable {
-                            confirmPasswordVisible = !confirmPasswordVisible
-                        }
+                        tint = AppColors.TextSecondary
                     )
-                },
-                textStyle = fieldTextStyle,
-                colors = fieldColors
-            )
+                }
+            },
+            textStyle = fieldTextStyle,
+            colors = fieldColors,
+            shape = RoundedCornerShape(14.dp)
+        )
 
-            Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(20.dp))
 
-            /* ---------- SEND OTP ---------- */
-            if (!otpSent) {
-                Button(
-                    enabled = !loading,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(primaryColor),
-                    onClick = {
+        /* ---------- SEND OTP ---------- */
+        AnimatedVisibility(
+            visible = !otpSent,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Button(
+                enabled = !loading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AppColors.PrimaryDark
+                ),
+                shape = RoundedCornerShape(14.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 2.dp
+                ),
+                onClick = {
                         if (email.isBlank()) {
                             Toast.makeText(context, "Enter email first", Toast.LENGTH_SHORT).show()
                             return@Button
@@ -241,33 +259,47 @@ fun CreateAccountScreen(
                                     Toast.makeText(context, t.message, Toast.LENGTH_SHORT).show()
                                 }
                             })
-                    }
-                ) {
-                    Text("Send OTP", color = Color.White)
                 }
+            ) {
+                Text("Send OTP", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
             }
+        }
 
-            /* ---------- OTP VERIFY ---------- */
-            if (otpSent && !otpVerified) {
-
+        /* ---------- OTP VERIFY ---------- */
+        AnimatedVisibility(
+            visible = otpSent && !otpVerified,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column {
                 Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = otp,
                     onValueChange = { if (it.length <= 6) otp = it },
-                    label = { Text("Enter 6-digit OTP") },
+                    label = { Text("Enter 6-digit OTP", color = AppColors.TextSecondary) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     textStyle = fieldTextStyle,
-                    colors = fieldColors
+                    colors = fieldColors,
+                    shape = RoundedCornerShape(14.dp)
                 )
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(16.dp))
 
                 Button(
                     enabled = !loading,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(primaryColor),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AppColors.PrimaryDark
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 2.dp
+                    ),
                     onClick = {
                         if (otp.length != 6) {
                             Toast.makeText(context, "Invalid OTP", Toast.LENGTH_SHORT).show()
@@ -297,47 +329,76 @@ fun CreateAccountScreen(
                             })
                     }
                 ) {
-                    Text("Verify OTP", color = Color.White)
+                    Text("Verify OTP", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
+        }
 
-            /* ---------- TERMS ---------- */
-            if (otpVerified) {
-
+        /* ---------- TERMS ---------- */
+        AnimatedVisibility(
+            visible = otpVerified,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column {
                 Spacer(Modifier.height(18.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = isTermsAccepted,
-                        onCheckedChange = { isTermsAccepted = it }
+                        onCheckedChange = { isTermsAccepted = it },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = AppColors.PrimaryDark
+                        )
                     )
 
-                    Text("I agree to ")
+                    Text("I agree to ", color = AppColors.TextSecondary, fontSize = 14.sp)
                     Text(
                         "Terms",
-                        color = primaryColor,
+                        color = AppColors.PrimaryDark,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.clickable { onTermsClick() }
                     )
-                    Text(" and ")
+                    Text(" and ", color = AppColors.TextSecondary, fontSize = 14.sp)
                     Text(
                         "Privacy Policy",
-                        color = primaryColor,
+                        color = AppColors.PrimaryDark,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.clickable { onPrivacyClick() }
                     )
                 }
             }
+        }
 
-            Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(16.dp))
 
-            /* ---------- CREATE ACCOUNT ---------- */
-            Button(
-                enabled = otpVerified && isTermsAccepted && !loading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(primaryColor),
-                onClick = {
+        /* ---------- CREATE ACCOUNT ---------- */
+        val buttonEnabled by remember { derivedStateOf { otpVerified && isTermsAccepted && !loading } }
+        val buttonAlpha by animateFloatAsState(
+            targetValue = if (buttonEnabled) 1f else 0.6f,
+            animationSpec = tween(durationMillis = 200),
+            label = "button_alpha"
+        )
+        
+        Button(
+            enabled = buttonEnabled,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .alpha(buttonAlpha),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.PrimaryDark,
+                disabledContainerColor = AppColors.BorderLight
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            ),
+            onClick = {
 
                     if (fullName.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
                         Toast.makeText(context, "All fields required", Toast.LENGTH_SHORT).show()
@@ -357,7 +418,13 @@ fun CreateAccountScreen(
                             call: Call<RegisterResponse>,
                             response: Response<RegisterResponse>
                         ) {
-                            if (response.body()?.status == "success") {
+                            val result = response.body()
+                            if (result?.status == "success") {
+                                // Save user session data
+                                UserSession.email = email
+                                result.user_id?.let { userId ->
+                                    UserSession.userId = userId.toString()
+                                }
                                 Toast.makeText(context, "Account created", Toast.LENGTH_SHORT).show()
                                 onCreateAccount()
                             } else {
@@ -373,25 +440,25 @@ fun CreateAccountScreen(
                             Toast.makeText(context, t.message, Toast.LENGTH_SHORT).show()
                         }
                     })
-                }
-            ) {
-                Text("Create Account", color = Color.White, fontSize = 16.sp)
             }
+        ) {
+            Text("Create Account", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+        }
 
-            Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text("Already have an account? ")
-                Text(
-                    "Sign In",
-                    color = primaryColor,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onSignInClick() }
-                )
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text("Already have an account? ", color = AppColors.TextSecondary, fontSize = 14.sp)
+            Text(
+                "Sign In",
+                color = AppColors.PrimaryDark,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                modifier = Modifier.clickable { onSignInClick() }
+            )
         }
     }
 }

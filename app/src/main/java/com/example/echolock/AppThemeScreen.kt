@@ -1,5 +1,6 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,29 +8,40 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import com.example.echolock.navigation.AppTheme
 import com.example.echolock.navigation.currentAppTheme
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun AppThemeScreen(onBack: () -> Unit) {
 
     val selectedTheme = currentAppTheme.value
 
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(20.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
 
         // 🔙 Header
@@ -39,7 +51,7 @@ fun AppThemeScreen(onBack: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onBackground,
+                tint = AppColors.TextPrimary,
                 modifier = Modifier.clickable { onBack() }
             )
 
@@ -47,9 +59,9 @@ fun AppThemeScreen(onBack: () -> Unit) {
 
             Text(
                 text = "App Theme",
-                fontSize = 20.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = AppColors.TextPrimary
             )
         }
 
@@ -84,36 +96,42 @@ fun ThemeItem(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                if (selected)
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                else
-                    Color.Transparent,
-                RoundedCornerShape(12.dp)
-            )
-            .clickable { onClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Text(
-            text = title,
-            modifier = Modifier.weight(1f),
-            fontSize = 15.sp,
-            color = MaterialTheme.colorScheme.onBackground
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) AppColors.PrimaryDark.copy(alpha = 0.1f) else AppColors.Surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (selected) 4.dp else 2.dp,
+            pressedElevation = 6.dp
         )
-
-        if (selected) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                fontSize = 16.sp,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                color = AppColors.TextPrimary
             )
+
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = AppColors.PrimaryDark
+                )
+            }
         }
     }
 
-    Spacer(Modifier.height(10.dp))
+    Spacer(Modifier.height(12.dp))
 }

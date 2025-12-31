@@ -12,11 +12,28 @@ object SaveStegoAudio {
 
     fun saveStegoAudioToDownloads(
         context: Context,
-        stegoFile: File
+        stegoFile: File,
+        originalFileName: String? = null
     ): Boolean {
 
         val resolver = context.contentResolver
-        val fileName = stegoFile.name
+        // Use original file name if provided, otherwise use stego file name
+        val fileName = if (!originalFileName.isNullOrBlank()) {
+            // Preserve original name but ensure .wav extension (since we're saving as WAV)
+            val nameWithoutExt = if (originalFileName.contains(".")) {
+                originalFileName.substringBeforeLast(".")
+            } else {
+                originalFileName
+            }
+            // Ensure we have a valid name (not empty)
+            if (nameWithoutExt.isNotBlank()) {
+                "$nameWithoutExt.wav"
+            } else {
+                stegoFile.name
+            }
+        } else {
+            stegoFile.name
+        }
 
         return try {
             val contentValues = ContentValues().apply {

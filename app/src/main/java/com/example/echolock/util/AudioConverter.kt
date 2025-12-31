@@ -3,6 +3,8 @@ package com.example.echolock.util
 import android.content.Context
 import android.media.*
 import android.net.Uri
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
@@ -14,6 +16,15 @@ object AudioConverter {
         context: Context,
         inputUri: Uri
     ): File {
+        val result = convertToWavWithProgress(context, inputUri, null)
+        return result.file
+    }
+
+    fun convertToWavWithProgress(
+        context: Context,
+        inputUri: Uri,
+        progressFlow: MutableStateFlow<Float>?
+    ): ConversionResult {
 
         val extractor = MediaExtractor()
         extractor.setDataSource(context, inputUri, null)
@@ -57,9 +68,14 @@ object AudioConverter {
         // Placeholder WAV header
         fos.write(ByteArray(44))
 
+        // Get duration for progress calculation
+        val durationUs = format.getLong(MediaFormat.KEY_DURATION)
+        val durationMs = if (durationUs > 0) durationUs / 1000 else 0L
+
         val bufferInfo = MediaCodec.BufferInfo()
         var totalAudioLen = 0
         var isEOS = false
+        var lastProgressUpdate = 0f
 
         while (true) {
 
@@ -95,6 +111,18 @@ object AudioConverter {
                 fos.write(pcmBytes)
                 totalAudioLen += pcmBytes.size
 
+                // Update progress
+                if (durationMs > 0 && progressFlow != null) {
+                    val currentTime = bufferInfo.presentationTimeUs / 1000
+                    val progress = (currentTime.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
+                    
+                    // Update only if progress changed significantly (every 1%)
+                    if (progress - lastProgressUpdate >= 0.01f || progress >= 0.99f) {
+                        progressFlow.value = progress
+                        lastProgressUpdate = progress
+                    }
+                }
+
                 codec.releaseOutputBuffer(outIndex, false)
             }
 
@@ -116,8 +144,18 @@ object AudioConverter {
             channels
         )
 
-        return outputFile
+        // Final progress update
+        progressFlow?.value = 1f
+
+        return ConversionResult(outputFile, totalAudioLen, sampleRate, channels)
     }
+
+    data class ConversionResult(
+        val file: File,
+        val audioLength: Int,
+        val sampleRate: Int,
+        val channels: Int
+    )
 
     private fun writeWavHeader(
         wavFile: File,

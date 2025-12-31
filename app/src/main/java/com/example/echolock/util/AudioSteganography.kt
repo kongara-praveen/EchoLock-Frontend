@@ -1,10 +1,12 @@
 package com.example.echolock.util
 
 import java.io.File
+import java.security.MessageDigest
 
 object AudioSteganography {
 
     private const val END_MARKER = "###ECHOLOCK###"
+    private const val PASSWORD_SEPARATOR = "::PWD::"
 
     /* ================= CAPACITY ================= */
 
@@ -24,6 +26,7 @@ object AudioSteganography {
     fun encode(
         wavFile: File,
         message: String,
+        password: String,
         outputFile: File
     ) {
         val audioBytes = wavFile.readBytes()
@@ -32,8 +35,12 @@ object AudioSteganography {
         val header = audioBytes.copyOfRange(0, 44)
         val data = audioBytes.copyOfRange(44, audioBytes.size)
 
+        // Hash password
+        val passwordHash = hashPassword(password)
+        
+        // Format: PASSWORD_HASH::PWD::MESSAGE###ECHOLOCK###
         val fullMessage =
-            (message + END_MARKER).toByteArray(Charsets.UTF_8)
+            ("$passwordHash$PASSWORD_SEPARATOR$message$END_MARKER").toByteArray(Charsets.UTF_8)
 
         val requiredBits = fullMessage.size * 8
 
@@ -55,10 +62,10 @@ object AudioSteganography {
     }
 
     /* ================= DECODE ================= */
-    fun decode(wavFile: File): String {
+    fun decode(wavFile: File, password: String? = null): DecodeResult {
 
         val audioBytes = wavFile.readBytes()
-        if (audioBytes.size <= 44) return "Decryption failed"
+        if (audioBytes.size <= 44) return DecodeResult("Decryption failed", false)
 
         val data = audioBytes.copyOfRange(44, audioBytes.size)
 
@@ -81,16 +88,40 @@ object AudioSteganography {
                     try {
                         String(resultBytes.toByteArray(), Charsets.UTF_8)
                     } catch (e: Exception) {
-                        return "No hidden message found"
+                        return DecodeResult("No hidden message found", false)
                     }
 
                 if (text.contains(END)) {
-                    return text.substringBefore(END)
+                    val content = text.substringBefore(END)
+                    
+                    // Check if password protected
+                    if (content.contains(PASSWORD_SEPARATOR)) {
+                        val parts = content.split(PASSWORD_SEPARATOR, limit = 2)
+                        if (parts.size == 2) {
+                            val storedHash = parts[0]
+                            val message = parts[1]
+                            
+                            // Verify password if provided
+                            if (password != null) {
+                                val inputHash = hashPassword(password)
+                                if (inputHash == storedHash) {
+                                    return DecodeResult(message, true)
+                                } else {
+                                    return DecodeResult("Wrong password", false)
+                                }
+                            } else {
+                                return DecodeResult("Password required", false)
+                            }
+                        }
+                    } else {
+                        // No password protection (old format)
+                        return DecodeResult(content, true)
+                    }
                 }
 
                 // 🚀 EARLY EXIT (NORMAL AUDIO)
                 if (resultBytes.size > MAX_BYTES_TO_READ) {
-                    return "No hidden message found"
+                    return DecodeResult("No hidden message found", false)
                 }
 
                 currentByte = 0
@@ -98,7 +129,20 @@ object AudioSteganography {
             }
         }
 
-        return "No hidden message found"
+        return DecodeResult("No hidden message found", false)
     }
+    
+    /* ================= PASSWORD HASHING ================= */
+    private fun hashPassword(password: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(password.toByteArray(Charsets.UTF_8))
+        return hashBytes.joinToString("") { "%02x".format(it) }
+    }
+    
+    /* ================= RESULT MODEL ================= */
+    data class DecodeResult(
+        val message: String,
+        val success: Boolean
+    )
 
 }

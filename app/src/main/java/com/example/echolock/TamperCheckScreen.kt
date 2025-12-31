@@ -4,6 +4,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,16 +13,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun TamperCheckScreen(
     onBack: () -> Unit,
-    onStartCheck: (Uri) -> Unit
+    onStartCheck: (Uri, String?) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -49,11 +52,19 @@ fun TamperCheckScreen(
             }
         }
 
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
-            .padding(22.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
 
         /* ---------- HEADER ---------- */
@@ -61,12 +72,13 @@ fun TamperCheckScreen(
             Text(
                 text = "Tamper Check",
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = AppColors.TextPrimary
             )
             Spacer(Modifier.weight(1f))
             Text(
                 text = "Back",
-                color = Color(0xFF005F73),
+                color = AppColors.PrimaryDark,
                 modifier = Modifier.clickable { onBack() }
             )
         }
@@ -77,7 +89,7 @@ fun TamperCheckScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = AppColors.Surface)
         ) {
             Column(
                 modifier = Modifier
@@ -91,16 +103,18 @@ fun TamperCheckScreen(
                     Text(
                         text = "Upload Encrypted Image or Audio",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = AppColors.TextPrimary
                     )
 
                     Spacer(Modifier.height(12.dp))
 
                     Button(
                         onClick = { picker.launch("*/*") },
-                        colors = ButtonDefaults.buttonColors(Color(0xFF005F73))
+                        colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+                        shape = RoundedCornerShape(14.dp)
                     ) {
-                        Text("Choose File", color = Color.White)
+                        Text("Choose File", color = AppColors.TextOnPrimary, fontWeight = FontWeight.SemiBold)
                     }
 
                 } else {
@@ -108,7 +122,8 @@ fun TamperCheckScreen(
                     Text(
                         text = "File Selected",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = AppColors.TextPrimary
                     )
 
                     Spacer(Modifier.height(6.dp))
@@ -116,7 +131,7 @@ fun TamperCheckScreen(
                     Text(
                         text = selectedFileName ?: "Selected file",
                         fontSize = 13.sp,
-                        color = Color.Gray
+                        color = AppColors.TextSecondary
                     )
 
                     Spacer(Modifier.height(12.dp))
@@ -139,15 +154,23 @@ fun TamperCheckScreen(
         /* ---------- CHECK BUTTON ---------- */
         Button(
             onClick = {
-                selectedUri?.let { onStartCheck(it) }
+                selectedUri?.let { onStartCheck(it, selectedFileName) }
             },
             enabled = selectedUri != null,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF006D77))
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.PrimaryDark,
+                disabledContainerColor = AppColors.BorderLight
+            ),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
         ) {
-            Text("Check Tamper", color = Color.White)
+            Text("Check Tamper", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }

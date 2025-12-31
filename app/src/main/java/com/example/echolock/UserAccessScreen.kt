@@ -1,5 +1,6 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,9 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -19,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
+import com.example.echolock.ui.theme.AppColors
 
 @Composable
 fun UserAccessScreen(
@@ -26,9 +29,18 @@ fun UserAccessScreen(
     onCreateAccountClick: () -> Unit
 ) {
 
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(AppColors.Background)
+            .alpha(alpha)
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -40,7 +52,7 @@ fun UserAccessScreen(
         Box(
             modifier = Modifier
                 .size(255.dp)
-                .background(Color(0xFFEFFBFB), CircleShape),
+                .background(AppColors.PrimaryLight.copy(alpha = 0.2f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -56,7 +68,7 @@ fun UserAccessScreen(
             "Welcome to EchoLock",
             fontSize = 22.sp,
             fontWeight = FontWeight.Black,
-            color = Color(0xFF0A2E45),
+            color = AppColors.TextPrimary,
             textAlign = TextAlign.Center
         )
 
@@ -65,7 +77,7 @@ fun UserAccessScreen(
         Text(
             "The professional standard for steganography integrity verification.",
             fontSize = 15.sp,
-            color = Color(0xFF5F7076),
+            color = AppColors.TextSecondary,
             textAlign = TextAlign.Center
         )
 
@@ -75,10 +87,14 @@ fun UserAccessScreen(
         Button(
             onClick = onLoginClick,
             modifier = Modifier.fillMaxWidth().height(55.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF005F73)),
-            shape = RoundedCornerShape(12.dp)
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
         ) {
-            Text("Login", color = Color.White, fontSize = 17.sp)
+            Text("Login", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         }
 
         Spacer(modifier = Modifier.height(18.dp))
@@ -86,7 +102,7 @@ fun UserAccessScreen(
         // 🔗 CREATE ACCOUNT
         Text(
             "Create Account",
-            color = Color(0xFF005F73),
+            color = AppColors.PrimaryDark,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable { onCreateAccountClick() }
@@ -99,7 +115,7 @@ fun UserAccessScreen(
             "By continuing, you agree to our Terms of Service and\nPrivacy Policy.",
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
-            color = Color(0xFF8D9B9E)
+            color = AppColors.TextTertiary
         )
     }
 }

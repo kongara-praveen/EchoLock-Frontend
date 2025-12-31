@@ -9,9 +9,25 @@ import android.provider.MediaStore
 import java.io.File
 import java.io.FileOutputStream
 
-fun saveStegoImage(context: Context, bitmap: Bitmap): String {
+fun saveStegoImage(context: Context, bitmap: Bitmap, originalFileName: String? = null): String {
 
-    val fileName = "EchoLock_${System.currentTimeMillis()}.png"
+    // Use original file name if provided, otherwise generate a name
+    val fileName = if (!originalFileName.isNullOrBlank()) {
+        // Preserve original name but ensure .png extension (since we're saving as PNG)
+        val nameWithoutExt = if (originalFileName.contains(".")) {
+            originalFileName.substringBeforeLast(".")
+        } else {
+            originalFileName
+        }
+        // Ensure we have a valid name (not empty)
+        if (nameWithoutExt.isNotBlank()) {
+            "$nameWithoutExt.png"
+        } else {
+            "EchoLock_${System.currentTimeMillis()}.png"
+        }
+    } else {
+        "EchoLock_${System.currentTimeMillis()}.png"
+    }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 

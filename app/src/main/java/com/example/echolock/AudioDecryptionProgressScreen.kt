@@ -1,6 +1,7 @@
 package com.example.echolock.ui.screens
 
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -10,9 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.AudioSteganography
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -51,15 +56,11 @@ fun AudioDecryptionProgressScreen(
                     inputStream.copyTo(output)
                 }
 
-                // 🔓 Decode message
-                val extractedMessage =
-                    AudioSteganography.decode(audioFile)
+                // 🔓 Decode message with password
+                val password = UserSession.decryptionPassword ?: ""
+                val result = AudioSteganography.decode(audioFile, password)
 
-                UserSession.decryptedMessage =
-                    if (extractedMessage.isBlank())
-                        "No hidden message found"
-                    else
-                        extractedMessage
+                UserSession.decryptedMessage = result.message
 
             } catch (e: Exception) {
                 UserSession.decryptedMessage = "Decryption failed"
@@ -75,33 +76,45 @@ fun AudioDecryptionProgressScreen(
         onCompleted()
     }
 
+    // Animation for progress
+    val progressAlpha by animateFloatAsState(
+        targetValue = if (progress > 0) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "progress_alpha"
+    )
+
     /* ---------- UI ---------- */
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppColors.Background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         CircularProgressIndicator(
             progress = progress / 100f,
-            color = Color(0xFF005F73),
+            color = AppColors.PrimaryDark,
             strokeWidth = 6.dp,
-            modifier = Modifier.size(110.dp)
+            modifier = Modifier
+                .size(110.dp)
+                .alpha(progressAlpha)
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
 
         Text(
             text = "$progress%",
-            fontSize = 26.sp,
+            fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF062A2F)
+            color = AppColors.TextPrimary
         )
+
+        Spacer(Modifier.height(8.dp))
 
         Text(
             text = "Decrypting audio...",
-            fontSize = 15.sp,
-            color = Color.Gray
+            fontSize = 16.sp,
+            color = AppColors.TextSecondary
         )
     }
 }

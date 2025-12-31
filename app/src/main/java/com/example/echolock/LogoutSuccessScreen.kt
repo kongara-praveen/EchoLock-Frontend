@@ -1,5 +1,6 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,17 +11,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.ui.theme.AppColors
 import kotlinx.coroutines.delay
 
 @Composable
 fun LogoutSuccessScreen(
     onFinished: () -> Unit
 ) {
+
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
 
     // Auto redirect after delay
     LaunchedEffect(Unit) {
@@ -31,8 +41,9 @@ fun LogoutSuccessScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(horizontal = 26.dp),
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -41,13 +52,13 @@ fun LogoutSuccessScreen(
         Box(
             modifier = Modifier
                 .size(120.dp)
-                .background(Color(0xFFE7FFF1), CircleShape),
+                .background(AppColors.Success.copy(alpha = 0.1f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Success",
-                tint = Color(0xFF1EC971),
+                tint = AppColors.Success,
                 modifier = Modifier.size(70.dp)
             )
         }
@@ -58,7 +69,7 @@ fun LogoutSuccessScreen(
             text = "Logged Out Successfully",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF062A2F),
+            color = AppColors.TextPrimary,
             textAlign = TextAlign.Center
         )
 
@@ -67,7 +78,7 @@ fun LogoutSuccessScreen(
         Text(
             text = "Redirecting...",
             fontSize = 15.sp,
-            color = Color.Gray,
+            color = AppColors.TextSecondary,
             textAlign = TextAlign.Center
         )
     }

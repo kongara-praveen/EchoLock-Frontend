@@ -3,27 +3,38 @@ package com.example.echolock.ui.screens
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.echolock.R
 import com.example.echolock.api.GenericResponse
 import com.example.echolock.api.RetrofitClient
+import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.util.HistoryTempStore
 import com.example.echolock.util.uriToFile
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -32,7 +43,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.example.echolock.util.HistoryTempStore
 
 @Composable
 fun SelectImageScreen(
@@ -41,8 +51,19 @@ fun SelectImageScreen(
 ) {
     val context = LocalContext.current
 
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var uploadedImageUri by remember { mutableStateOf<Uri?>(null) }
+    // Restore state from UserSession
+    var selectedImageUri by remember { 
+        val uriString = UserSession.selectedImageUriString
+        mutableStateOf<Uri?>(
+            if (uriString != null) Uri.parse(uriString) else null
+        )
+    }
+    var uploadedImageUri by remember { 
+        val uriString = UserSession.selectedImageUriString
+        mutableStateOf<Uri?>(
+            if (uriString != null) Uri.parse(uriString) else null
+        )
+    }
     var isUploading by remember { mutableStateOf(false) }
 
     /* ---------------- IMAGE UPLOAD (OPTIONAL BACKEND) ---------------- */
@@ -60,7 +81,8 @@ fun SelectImageScreen(
             body = requestBody
         )
 
-        val userId = "1".toRequestBody("text/plain".toMediaType())
+        val userId = UserSession.userId.ifEmpty { "1" }
+            .toRequestBody("text/plain".toMediaType())
 
         RetrofitClient.instance.uploadImage(imagePart, userId)
             .enqueue(object : Callback<GenericResponse> {
@@ -84,40 +106,60 @@ fun SelectImageScreen(
             if (uri != null) {
                 selectedImageUri = uri
                 uploadedImageUri = uri
+                // Store UI state
+                UserSession.selectedImageUriString = uri.toString()
                 uploadImage(uri) // optional
             }
         }
+
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
 
     /* ---------------- UI ---------------- */
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
 
         // Header
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_back),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
                 modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onBack() }
+                    .size(28.dp)
+                    .clickable { onBack() },
+                tint = AppColors.TextPrimary
             )
             Spacer(Modifier.width(12.dp))
-            Text("Select Image", fontSize = 20.sp)
+            Text(
+                "Select Image",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppColors.TextPrimary
+            )
         }
 
-        Spacer(Modifier.height(26.dp))
+        Spacer(Modifier.height(28.dp))
 
         if (uploadedImageUri == null) {
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
-                    .border(1.5.dp, Color(0xFFCCE7F0), RoundedCornerShape(16.dp))
-                    .background(Color(0xFFF1FFFA), RoundedCornerShape(16.dp))
+                    .height(200.dp)
+                    .border(2.dp, AppColors.BorderLight, RoundedCornerShape(16.dp))
+                    .background(AppColors.Surface, RoundedCornerShape(16.dp))
                     .clickable(enabled = !isUploading) {
                         imagePickerLauncher.launch("image/*")
                     },
@@ -127,14 +169,20 @@ fun SelectImageScreen(
                     Image(
                         painter = painterResource(id = R.drawable.ic_upload),
                         contentDescription = "Upload",
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(56.dp)
                     )
-                    Spacer(Modifier.height(10.dp))
-                    Text("Tap to Upload Image", fontSize = 16.sp)
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "Tap to Upload Image",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppColors.TextPrimary
+                    )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         text = if (isUploading) "Uploading..." else "Supports PNG, JPG, WEBP",
-                        fontSize = 13.sp
+                        fontSize = 13.sp,
+                        color = AppColors.TextSecondary
                     )
                 }
             }
@@ -143,53 +191,80 @@ fun SelectImageScreen(
 
             Text(
                 text = "Selected Image Preview",
-                fontSize = 14.sp,
-                color = Color(0xFF005F73)
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = AppColors.TextPrimary,
+                modifier = Modifier.padding(bottom = 12.dp)
             )
-
-            Spacer(Modifier.height(10.dp))
 
             AsyncImage(
                 model = uploadedImageUri,
                 contentDescription = "Selected Image",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
-                    .background(Color.LightGray, RoundedCornerShape(12.dp))
+                    .height(240.dp)
+                    .background(AppColors.BorderLight, RoundedCornerShape(16.dp))
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
 
-            Button(
+            OutlinedButton(
                 onClick = {
                     uploadedImageUri = null
                     selectedImageUri = null
+                    UserSession.selectedImageUriString = null
                     imagePickerLauncher.launch("image/*")
                 },
-                colors = ButtonDefaults.buttonColors(Color.Gray),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = AppColors.TextSecondary
+                )
             ) {
-                Text("Re-select Image")
+                Text("Re-select Image", fontSize = 15.sp)
             }
         }
 
         Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(16.dp))
 
-        // ✅ IMPORTANT FIX HERE
+        // Continue Button
+        val buttonEnabled by remember { derivedStateOf { uploadedImageUri != null && !isUploading } }
+        val buttonAlpha by animateFloatAsState(
+            targetValue = if (buttonEnabled) 1f else 0.6f,
+            animationSpec = tween(durationMillis = 200),
+            label = "button_alpha"
+        )
+        
         Button(
             onClick = {
                 uploadedImageUri?.let {
                     onContinue(it.toString())
                 }
-                // ✅ PASS URI STRING
             },
-            enabled = uploadedImageUri != null,
+            enabled = buttonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF005F73))
+                .height(56.dp)
+                .alpha(buttonAlpha),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.PrimaryDark,
+                disabledContainerColor = AppColors.BorderLight
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
         ) {
-            Text("Continue", color = Color.White)
+            Text(
+                "Continue",
+                color = Color.White,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
+        
+        Spacer(Modifier.height(8.dp))
     }
 }

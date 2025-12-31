@@ -1,15 +1,19 @@
 package com.example.echolock.ui.screens
 
 import android.widget.Toast
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -21,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
+import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.api.GenericResponse
 import com.example.echolock.api.RetrofitClient
 import com.example.echolock.session.UserSession
@@ -34,7 +39,7 @@ fun VerificationScreen(
     onVerified: () -> Unit
 ) {
 
-    var otp by remember { mutableStateOf("") }
+    var otp by rememberSaveable { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -42,6 +47,13 @@ fun VerificationScreen(
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // Screen entrance animation
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -51,7 +63,9 @@ fun VerificationScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 26.dp),
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.Start
     ) {
 
@@ -71,7 +85,7 @@ fun VerificationScreen(
             "Verification",
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF082B34)
+            color = AppColors.TextPrimary
         )
 
         Spacer(Modifier.height(6.dp))
@@ -79,7 +93,7 @@ fun VerificationScreen(
         Text(
             "Enter the 6-digit code sent to your email.",
             fontSize = 15.sp,
-            color = Color(0xFF6B7E80)
+            color = AppColors.TextSecondary
         )
 
         Spacer(Modifier.height(30.dp))
@@ -127,9 +141,16 @@ fun VerificationScreen(
             enabled = otp.length == 6 && !loading,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF005F73)),
+                .height(56.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.PrimaryDark,
+                disabledContainerColor = AppColors.BorderLight
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            ),
             onClick = {
 
                 if (email.isBlank()) {
@@ -170,12 +191,12 @@ fun VerificationScreen(
         ) {
             if (loading) {
                 CircularProgressIndicator(
-                    color = Color.White,
+                    color = AppColors.TextOnPrimary,
                     strokeWidth = 2.dp,
                     modifier = Modifier.size(22.dp)
                 )
             } else {
-                Text("Verify Code", color = Color.White, fontSize = 16.sp)
+                Text("Verify Code", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
             }
         }
 
@@ -190,7 +211,7 @@ fun VerificationScreen(
             Spacer(Modifier.width(6.dp))
             Text(
                 "Resend",
-                color = Color(0xFF005F73),
+                color = AppColors.PrimaryDark,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable(enabled = !loading) {
 
@@ -233,7 +254,7 @@ fun OtpBox(value: String) {
             .size(48.dp)
             .border(
                 width = 1.5.dp,
-                color = Color(0xFF005F73),
+                color = AppColors.PrimaryDark,
                 shape = RoundedCornerShape(8.dp)
             ),
         contentAlignment = Alignment.Center
@@ -242,6 +263,7 @@ fun OtpBox(value: String) {
             text = value,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
+            color = AppColors.TextPrimary,
             textAlign = TextAlign.Center
         )
     }

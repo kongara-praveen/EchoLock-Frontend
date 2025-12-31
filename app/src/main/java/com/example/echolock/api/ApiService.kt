@@ -126,6 +126,12 @@ interface ApiService {
     suspend fun getFiles(
         @Query("user_id") userId: Int
     ): FilesResponse
+    
+    @FormUrlEncoded
+    @POST("files/delete_file.php")
+    suspend fun deleteFile(
+        @Field("file_id") fileId: Int
+    ): GenericResponse
     @GET("history/get_history.php")
     suspend fun getHistory(
         @Query("user_id") userId: Int
@@ -137,8 +143,29 @@ interface ApiService {
         @Field("file_name") fileName: String,
         @Field("action") action: String
     ): GenericResponse
+    @FormUrlEncoded
     @POST("tamper/register_encryption.php")
-    fun createImageToken(): Call<TokenResponse>
+    fun createImageToken(
+        @Field("file_name") fileName: String
+    ): Call<TokenResponse>
+    
+    // ================= INTEGRITY SIGNATURE =================
+    
+    @FormUrlEncoded
+    @POST("tamper/store_signature.php")
+    suspend fun storeIntegritySignature(
+        @Field("file_name") fileName: String,
+        @Field("user_id") userId: Int,
+        @Field("image_hash") imageHash: String,
+        @Field("integrity_signature") integritySignature: String
+    ): GenericResponse
+    
+    @FormUrlEncoded
+    @POST("tamper/get_signature.php")
+    suspend fun getIntegritySignature(
+        @Field("file_name") fileName: String,
+        @Field("user_id") userId: Int
+    ): SignatureResponse
     @FormUrlEncoded
     @POST("reset_password.php")
     fun resetPassword(

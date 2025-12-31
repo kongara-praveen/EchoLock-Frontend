@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.ui.theme.AppColors
 import kotlinx.coroutines.delay
 
 @Composable
@@ -69,14 +70,7 @@ fun WelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFFF7FBFD),
-                        Color(0xFFE6F2F5)
-                    )
-                )
-            )
+            .background(AppColors.Background)
             .alpha(alphaAnim.value),
         contentAlignment = Alignment.Center
     ) {
@@ -91,7 +85,7 @@ fun WelcomeScreen(
             Canvas(modifier = Modifier.size(120.dp)) {
                 val w = size.width
                 val h = size.height
-                val color = Color(0xFF054F5F)
+                val color = AppColors.PrimaryDark
 
                 fun wave(y: Float, offset: Float) {
                     val path = Path().apply {
@@ -117,7 +111,7 @@ fun WelcomeScreen(
                 text = "EchoLock",
                 fontSize = 38.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF003845),
+                color = AppColors.TextPrimary,
                 letterSpacing = 1.2.sp,
                 textAlign = TextAlign.Center
             )
@@ -128,7 +122,7 @@ fun WelcomeScreen(
             Text(
                 text = "A Audio Steganography",
                 fontSize = 15.sp,
-                color = Color(0xFF6B8E95),
+                color = AppColors.TextSecondary,
                 letterSpacing = 0.6.sp,
                 textAlign = TextAlign.Center
             )

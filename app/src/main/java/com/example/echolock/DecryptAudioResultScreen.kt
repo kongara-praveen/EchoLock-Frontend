@@ -5,21 +5,33 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.echolock.api.RetrofitClient
 import com.example.echolock.R
 import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.util.HistoryTempStore
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DecryptAudioResultScreen(
@@ -27,85 +39,143 @@ fun DecryptAudioResultScreen(
 ) {
     val context = LocalContext.current
 
-    val decryptedMessage =
-        UserSession.decryptedMessage ?: "No hidden message found"
+    val decryptedMessageRaw = UserSession.decryptedMessage ?: "No hidden message found"
+    val decryptedMessage = if (decryptedMessageRaw == "Wrong password" || decryptedMessageRaw == "Password required") {
+        decryptedMessageRaw
+    } else {
+        decryptedMessageRaw
+    }
+    val isPasswordError = decryptedMessage == "Wrong password" || decryptedMessage == "Password required"
+
+    // Save history when screen appears (only if successful)
+    LaunchedEffect(Unit) {
+        val message = UserSession.decryptedMessage ?: ""
+        // Don't save history if password error
+        if (message == "Wrong password" || message == "Password required") {
+            return@LaunchedEffect
+        }
+        
+        val audioFileName = HistoryTempStore.lastAudioFileName ?: "audio_file"
+        val userId = UserSession.userId.toIntOrNull() ?: 1
+        
+        try {
+            withContext(Dispatchers.IO) {
+                RetrofitClient.instance.addHistory(
+                    userId = userId,
+                    fileName = audioFileName,
+                    action = "Decrypted Audio"
+                )
+            }
+            // Clear after saving
+            HistoryTempStore.lastAudioFileName = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(20.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
-
         // HEADER
-        Text(
-            text = "<  Message Extracted",
-            fontSize = 20.sp,
-            color = Color(0xFF062A2F),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { onDone() }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_back),
+                contentDescription = "Back",
+                modifier = Modifier
+                    .size(28.dp)
+                    .clickable { onDone() },
+                tint = AppColors.TextPrimary
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = "Message Extracted",
+                fontSize = 22.sp,
+                color = AppColors.TextPrimary,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        Spacer(modifier = Modifier.height(26.dp))
+        Spacer(Modifier.height(24.dp))
 
         // SUCCESS ROW
         Row(verticalAlignment = Alignment.CenterVertically) {
-
             Box(
                 modifier = Modifier
-                    .size(46.dp)
-                    .background(Color(0xFFE8FFF2), RoundedCornerShape(50)),
+                    .size(48.dp)
+                    .background(
+                        if (isPasswordError) AppColors.Error.copy(alpha = 0.1f)
+                        else AppColors.Success.copy(alpha = 0.1f),
+                        RoundedCornerShape(50)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
+                Icon(
                     painter = painterResource(id = R.drawable.ic_lock),
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
+                    tint = if (isPasswordError) AppColors.Error else AppColors.Success
                 )
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(Modifier.width(14.dp))
 
             Text(
                 text = "Decryption Result",
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
-                color = Color(0xFF062A2F)
+                fontSize = 18.sp,
+                color = AppColors.TextPrimary
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
 
         // MESSAGE BOX
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFA)),
-            shape = RoundedCornerShape(14.dp)
+            colors = CardDefaults.cardColors(
+                containerColor = if (isPasswordError) AppColors.Error.copy(alpha = 0.1f) else AppColors.Surface
+            ),
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-
                 Text(
-                    "EXTRACTED MESSAGE",
+                    if (isPasswordError) "ERROR" else "EXTRACTED MESSAGE",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = Color(0xFF062A2F)
+                    color = if (isPasswordError) AppColors.Error else AppColors.TextPrimary
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(Modifier.height(14.dp))
 
                 Text(
                     decryptedMessage,
-                    fontSize = 14.sp,
-                    color = Color(0xFF062A2F)
+                    fontSize = 15.sp,
+                    color = if (isPasswordError) AppColors.Error else AppColors.TextPrimary
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(22.dp))
+        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(16.dp))
 
-        // COPY BUTTON
-        Button(
+        // COPY BUTTON (DISABLED FOR PASSWORD ERRORS)
+        OutlinedButton(
             onClick = {
+                if (isPasswordError) return@OutlinedButton
                 val clipboard =
                     context.getSystemService(Context.CLIPBOARD_SERVICE)
                             as ClipboardManager
@@ -117,38 +187,49 @@ fun DecryptAudioResultScreen(
                     )
                 )
             },
+            enabled = !isPasswordError,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE8FFFB)),
-            shape = RoundedCornerShape(12.dp)
+                .height(56.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = AppColors.PrimaryDark
+            ),
+            shape = RoundedCornerShape(14.dp)
         ) {
-            Image(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_copy),
                 contentDescription = null,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(20.dp),
+                tint = AppColors.PrimaryDark
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(Modifier.width(8.dp))
             Text(
                 "Copy to Clipboard",
-                color = Color(0xFF005F73),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }
 
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(Modifier.height(12.dp))
 
         // DONE BUTTON
         Button(
-            onClick = onDone,
+            onClick = {
+                // Clear decryption session
+                UserSession.clearAudioDecryptionSession()
+                onDone()
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(53.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005F73)),
-            shape = RoundedCornerShape(12.dp)
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
         ) {
-            Text("Done", color = Color.White, fontSize = 16.sp)
+            Text("Done", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }

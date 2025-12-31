@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,11 +20,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
 import com.example.echolock.api.*
 import com.example.echolock.session.UserSession
+import com.example.echolock.ui.theme.AppColors
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -42,15 +47,50 @@ fun SelectAudioScreen(
 ) {
     val context = LocalContext.current
 
+    // Restore state from UserSession
     var selectedFile by remember { mutableStateOf<File?>(null) }
-    var selectedUri by remember { mutableStateOf<Uri?>(null) }
-    var selectedFileName by remember { mutableStateOf<String?>(null) }
+    var selectedUri by remember { 
+        mutableStateOf<Uri?>(
+            UserSession.selectedAudioUriString?.let { Uri.parse(it) }
+        )
+    }
+    var selectedFileName by remember { 
+        mutableStateOf<String?>(UserSession.originalAudioName)
+    }
     var recentAudios by remember { mutableStateOf<List<AudioItem>>(emptyList()) }
     var isUploading by remember { mutableStateOf(false) }
+    
+    // Restore file if URI exists (only on initial load)
+    LaunchedEffect(Unit) {
+        selectedUri?.let { uri ->
+            try {
+                val name = getFileName(context, uri)
+                val file = File(context.cacheDir, name)
+                if (!file.exists()) {
+                    context.contentResolver.openInputStream(uri)?.use { input ->
+                        FileOutputStream(file).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                }
+                if (file.exists()) {
+                    selectedFile = file
+                    selectedFileName = name
+                }
+            } catch (e: Exception) {
+                // File might not be accessible, clear state
+                selectedUri = null
+                selectedFile = null
+                selectedFileName = null
+                UserSession.selectedAudioUriString = null
+            }
+        }
+    }
 
     /* ---------- LOAD RECENT FILES ---------- */
     fun loadRecentAudio() {
-        RetrofitClient.instance.getRecentAudio(1)
+        val userId = UserSession.userId.toIntOrNull() ?: 1
+        RetrofitClient.instance.getRecentAudio(userId)
             .enqueue(object : Callback<RecentAudioResponse> {
                 override fun onResponse(
                     call: Call<RecentAudioResponse>,
@@ -87,9 +127,10 @@ fun SelectAudioScreen(
             selectedUri = uri
             selectedFileName = name
 
-            // ✅ STORE ORIGINAL AUDIO INFO
+            // ✅ STORE ORIGINAL AUDIO INFO AND UI STATE
             UserSession.originalAudioPath = file.absolutePath
             UserSession.originalAudioName = name
+            UserSession.selectedAudioUriString = uri.toString()
         }
 
     /* ---------- UPLOAD ORIGINAL AUDIO ---------- */
@@ -112,8 +153,8 @@ fun SelectAudioScreen(
                 body = requestBody
             )
 
-        val userId =
-            "1".toRequestBody("text/plain".toMediaType())
+        val userId = UserSession.userId.ifEmpty { "1" }
+            .toRequestBody("text/plain".toMediaType())
 
         RetrofitClient.instance.uploadAudio(audioPart, userId)
             .enqueue(object : Callback<GenericResponse> {
@@ -145,76 +186,121 @@ fun SelectAudioScreen(
             })
     }
 
+    // Animation for screen entrance
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "screen_alpha"
+    )
+
     /* ---------- UI ---------- */
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(22.dp)
+            .background(AppColors.Background)
+            .alpha(alpha)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
                 painter = painterResource(R.drawable.ic_back),
-                contentDescription = null,
+                contentDescription = "Back",
                 modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onBack() }
+                    .size(28.dp)
+                    .clickable { onBack() },
+                tint = AppColors.TextPrimary
             )
             Spacer(Modifier.width(12.dp))
-            Text("Select Audio", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "Select Audio",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppColors.TextPrimary
+            )
         }
 
-        Spacer(Modifier.height(25.dp))
+        Spacer(Modifier.height(24.dp))
 
-        if (selectedFile == null) {
-
+        AnimatedVisibility(
+            visible = selectedFile == null,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFEAF7FB), RoundedCornerShape(16.dp))
+                    .background(AppColors.Surface, RoundedCornerShape(16.dp))
+                    .border(2.dp, AppColors.BorderLight, RoundedCornerShape(16.dp))
                     .clickable { picker.launch(arrayOf("audio/*")) }
                     .padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
+                Icon(
                     painter = painterResource(R.drawable.ic_upload),
                     contentDescription = null,
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(56.dp),
+                    tint = AppColors.PrimaryDark
                 )
                 Spacer(Modifier.height(12.dp))
-                Text("Tap to Upload Audio", fontSize = 16.sp)
+                Text(
+                    "Tap to Upload Audio",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.TextPrimary
+                )
+                Spacer(Modifier.height(6.dp))
                 Text(
                     "Supports MP3, WAV, FLAC, AAC",
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    fontSize = 13.sp,
+                    color = AppColors.TextSecondary
                 )
-            }
-
-        } else {
-
-            AudioListItem(
-                fileName = selectedFileName ?: "Audio",
-                size = if (isUploading) "Uploading…" else "Ready"
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            Button(
-                onClick = {
-                    selectedFile = null
-                    selectedUri = null
-                    selectedFileName = null
-                    UserSession.clearAudioEncryptionSession()
-                },
-                colors = ButtonDefaults.buttonColors(Color.Gray)
-            ) {
-                Text("Reselect Audio")
             }
         }
 
-        Spacer(Modifier.height(25.dp))
+        AnimatedVisibility(
+            visible = selectedFile != null,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column {
+                AudioListItem(
+                    fileName = selectedFileName ?: "Audio",
+                    size = if (isUploading) "Uploading…" else "Ready"
+                )
 
-        Text("Recent Files", fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(12.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        selectedFile = null
+                        selectedUri = null
+                        selectedFileName = null
+                        UserSession.selectedAudioUriString = null
+                        UserSession.originalAudioPath = null
+                        UserSession.originalAudioName = null
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = AppColors.TextSecondary
+                    ),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text("Reselect Audio", fontSize = 15.sp)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            "Recent Files",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            color = AppColors.TextPrimary
+        )
         Spacer(Modifier.height(12.dp))
 
         recentAudios.forEach {
@@ -226,16 +312,33 @@ fun SelectAudioScreen(
         }
 
         Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(16.dp))
+
+        val buttonEnabled by remember { derivedStateOf { selectedFile != null && !isUploading } }
+        val buttonAlpha by animateFloatAsState(
+            targetValue = if (buttonEnabled) 1f else 0.6f,
+            animationSpec = tween(durationMillis = 200),
+            label = "button_alpha"
+        )
 
         Button(
             onClick = { uploadOriginalAudioAndNavigate() },
-            enabled = selectedFile != null && !isUploading,
+            enabled = buttonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp),
-            colors = ButtonDefaults.buttonColors(Color(0xFF005F73))
+                .height(56.dp)
+                .alpha(buttonAlpha),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.PrimaryDark,
+                disabledContainerColor = AppColors.BorderLight
+            ),
+            shape = RoundedCornerShape(14.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
         ) {
-            Text("Continue", color = Color.White)
+            Text("Continue", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -260,18 +363,29 @@ fun AudioListItem(fileName: String, size: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(14.dp))
+            .background(AppColors.Surface, RoundedCornerShape(14.dp))
             .padding(16.dp)
     ) {
-        Image(
+        Icon(
             painter = painterResource(R.drawable.ic_music),
             contentDescription = null,
-            modifier = Modifier.size(26.dp)
+            modifier = Modifier.size(28.dp),
+            tint = AppColors.PrimaryDark
         )
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.width(12.dp))
         Column {
-            Text(fileName, fontWeight = FontWeight.Bold)
-            Text(size, fontSize = 12.sp, color = Color.Gray)
+            Text(
+                fileName,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = AppColors.TextPrimary
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                size,
+                fontSize = 13.sp,
+                color = AppColors.TextSecondary
+            )
         }
     }
 }
