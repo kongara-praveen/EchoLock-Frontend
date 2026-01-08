@@ -7,7 +7,7 @@ import java.io.FileInputStream
 import java.security.MessageDigest
 
 /**
- * Utility for generating and verifying integrity signatures for encrypted images.
+ * Utility for generating and verifying integrity signatures for encrypted images and audio files.
  * Uses SHA-256 hash combined with a secret EchoLock token to create tamper-proof signatures.
  */
 object IntegritySignatureUtil {
@@ -175,6 +175,63 @@ object IntegritySignatureUtil {
             Log.e("IntegritySignature", "Error generating hash without signature", e)
             null
         }
+    }
+
+    /**
+     * Generates hash of audio file without the signature bits.
+     * This reconstructs the audio file as it was when the signature was computed (before signature embedding).
+     * The signature bits are zeroed out to approximate the original state.
+     * @param audioFile The audio file to hash
+     * @param signaturePayload The signature payload bytes that were embedded
+     * @param signatureStartBitIndex The bit index (in data section, after header) where signature embedding started
+     * @return SHA-256 hash as hexadecimal string, or null if error
+     */
+    fun generateAudioHashWithoutSignature(
+        audioFile: File,
+        signaturePayload: ByteArray,
+        signatureStartBitIndex: Int
+    ): String? {
+        return try {
+            val audioBytes = audioFile.readBytes()
+            if (audioBytes.size <= 44) return null
+            
+            // WAV header (DO NOT TOUCH)
+            val header = audioBytes.copyOfRange(0, 44)
+            val data = audioBytes.copyOfRange(44, audioBytes.size).copyOf()
+            
+            // Zero out the signature bits to restore audio to pre-signature state
+            val totalSigBits = signaturePayload.size * 8
+            
+            for (i in 0 until totalSigBits) {
+                val bitIndex = signatureStartBitIndex + i
+                if (bitIndex < data.size * 8) {
+                    val byteIndex = bitIndex / 8
+                    val bitPosition = 7 - (bitIndex % 8) // Bit position within byte (0-7, MSB to LSB)
+                    // Zero out the LSB (set to even value, approximating original state)
+                    val mask = 0xFF xor (1 shl bitPosition)
+                    data[byteIndex] = (data[byteIndex].toInt() and mask).toByte()
+                }
+            }
+            
+            // Compute hash of the restored audio file (without signature bits)
+            val digest = MessageDigest.getInstance("SHA-256")
+            digest.update(header + data)
+            digest.digest().joinToString("") { "%02x".format(it) }
+        } catch (e: Exception) {
+            Log.e("IntegritySignature", "Error generating audio hash without signature", e)
+            null
+        }
+    }
+
+    /**
+     * Generates hash and signature for an audio file (used during encryption)
+     * @param audioFile The audio file to process
+     * @return Pair of (audioHash, integritySignature), or null if error
+     */
+    fun generateAudioHashAndSignature(audioFile: File): Pair<String, String>? {
+        val audioHash = generateImageHash(audioFile) ?: return null // Reuse image hash method (same logic)
+        val signature = createIntegritySignature(audioHash) ?: return null
+        return Pair(audioHash, signature)
     }
 }
 

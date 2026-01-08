@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -52,7 +53,15 @@ fun DashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF0B132B),
+                        Color(0xFF1C2541),
+                        Color(0xFF3A506B)
+                    )
+                )
+            )
             .alpha(alpha)
     ) {
 
@@ -67,14 +76,14 @@ fun DashboardScreen(
                 text = "Welcome back",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
 
             Spacer(Modifier.height(8.dp))
 
             Text(
                 text = "What would you like to do today?",
-                color = AppColors.TextSecondary,
+                color = Color(0xFFBEE7E8),
                 fontSize = 15.sp,
                 lineHeight = 22.sp
             )
@@ -85,7 +94,12 @@ fun DashboardScreen(
                 icon = R.drawable.ic_mic,
                 title = "Hide in Audio",
                 subtitle = "Embed secret messages in audio files",
-                bg = Color(0xFFDDF7FF),
+                gradientColors = listOf(
+                    Color(0xFF6366F1),
+                    Color(0xFF4F46E5),
+                    Color(0xFF4338CA)
+                ),
+                iconBg = Color(0xFF818CF8),
                 onClick = onEncryptAudio
             )
 
@@ -95,7 +109,12 @@ fun DashboardScreen(
                 icon = R.drawable.ic_image,
                 title = "Hide in Image",
                 subtitle = "Conceal data within image files",
-                bg = Color(0xFFEDE4FF),
+                gradientColors = listOf(
+                    Color(0xFFEC4899),
+                    Color(0xFFDB2777),
+                    Color(0xFFBE185D)
+                ),
+                iconBg = Color(0xFFF472B6),
                 onClick = onEncryptImage
             )
 
@@ -105,7 +124,12 @@ fun DashboardScreen(
                 icon = R.drawable.ic_tamper,
                 title = "Tamper Check",
                 subtitle = "Verify file integrity",
-                bg = Color(0xFFE5FFF1),
+                gradientColors = listOf(
+                    Color(0xFF10B981),
+                    Color(0xFF059669),
+                    Color(0xFF047857)
+                ),
+                iconBg = Color(0xFF34D399),
                 onClick = onTamperCheck
             )
 
@@ -115,7 +139,7 @@ fun DashboardScreen(
                 text = "Quick Actions",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
 
             Spacer(Modifier.height(20.dp))
@@ -128,6 +152,12 @@ fun DashboardScreen(
                 QuickBox(
                     text = "Decrypt Audio",
                     icon = R.drawable.ic_mic,
+                    gradientColors = listOf(
+                        Color(0xFF0EA5E9),
+                        Color(0xFF0284C7),
+                        Color(0xFF0369A1)
+                    ),
+                    iconBg = Color(0xFF38BDF8),
                     onClick = onDecryptAudio,
                     modifier = Modifier.weight(1f)
                 )
@@ -137,6 +167,12 @@ fun DashboardScreen(
                 QuickBox(
                     text = "Decrypt Image",
                     icon = R.drawable.ic_image,
+                    gradientColors = listOf(
+                        Color(0xFFF59E0B),
+                        Color(0xFFD97706),
+                        Color(0xFFB45309)
+                    ),
+                    iconBg = Color(0xFFFBBF24),
                     onClick = onDecryptImage,
                     modifier = Modifier.weight(1f)
                 )
@@ -163,9 +199,16 @@ fun DashboardScreen(
 /*───────────────────────────────────────────────────────────────*/
 
 @Composable
-fun DashboardTile(icon: Int, title: String, subtitle: String, bg: Color, onClick: () -> Unit) {
+fun DashboardTile(
+    icon: Int, 
+    title: String, 
+    subtitle: String, 
+    gradientColors: List<Color>,
+    iconBg: Color,
+    onClick: () -> Unit
+) {
     var isPressed by remember { mutableStateOf(false) }
-    
+
     // Reset pressed state after animation
     LaunchedEffect(isPressed) {
         if (isPressed) {
@@ -173,12 +216,12 @@ fun DashboardTile(icon: Int, title: String, subtitle: String, bg: Color, onClick
             isPressed = false
         }
     }
-    
+
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.98f else 1f,
+        targetValue = if (isPressed) 0.97f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMedium
         ),
         label = "tile_scale"
     )
@@ -191,57 +234,76 @@ fun DashboardTile(icon: Int, title: String, subtitle: String, bg: Color, onClick
                 isPressed = true
                 onClick()
             }),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = AppColors.Surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp, pressedElevation = 1.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp, pressedElevation = 4.dp)
     ) {
-
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = gradientColors
+                    )
+                )
         ) {
-
-            Box(
+            Row(
                 modifier = Modifier
-                    .size(56.dp)
-                    .background(bg, CircleShape),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .background(iconBg.copy(alpha = 0.9f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = icon),
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }
+                }
+
+                Spacer(Modifier.width(20.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+
+                    Text(
+                        text = subtitle,
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.9f),
+                        lineHeight = 18.sp
+                    )
+                }
+
+                Spacer(Modifier.width(8.dp))
+
                 Image(
-                    painter = painterResource(id = icon),
+                    painter = painterResource(id = R.drawable.ic_arrow),
                     contentDescription = null,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.9f))
                 )
             }
-
-            Spacer(Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AppColors.TextPrimary
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = subtitle,
-                    fontSize = 13.sp,
-                    color = AppColors.TextSecondary,
-                    lineHeight = 18.sp
-                )
-            }
-
-            Spacer(Modifier.width(8.dp))
-
-            Image(
-                painter = painterResource(id = R.drawable.ic_arrow),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(AppColors.TextSecondary)
-            )
         }
     }
 }
@@ -254,11 +316,13 @@ fun DashboardTile(icon: Int, title: String, subtitle: String, bg: Color, onClick
 fun QuickBox(
     text: String,
     icon: Int,
+    gradientColors: List<Color>,
+    iconBg: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isPressed by remember { mutableStateOf(false) }
-    
+
     // Reset pressed state after animation
     LaunchedEffect(isPressed) {
         if (isPressed) {
@@ -266,12 +330,12 @@ fun QuickBox(
             isPressed = false
         }
     }
-    
+
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMedium
         ),
         label = "quickbox_scale"
     )
@@ -283,39 +347,57 @@ fun QuickBox(
                 isPressed = true
                 onClick()
             }),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = AppColors.CardElevated),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp, pressedElevation = 1.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp, pressedElevation = 2.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(
+                    Brush.verticalGradient(
+                        colors = gradientColors
+                    )
+                )
         ) {
-
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(56.dp)
-                    .background(AppColors.PrimaryLight.copy(alpha = 0.2f), CircleShape),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp)
+
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(Color.White.copy(alpha = 0.3f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .background(iconBg.copy(alpha = 0.9f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = icon),
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp),
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = text,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }
-
-            Spacer(Modifier.height(12.dp))
-
-            Text(
-                text = text,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = AppColors.TextPrimary,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
         }
     }
 }

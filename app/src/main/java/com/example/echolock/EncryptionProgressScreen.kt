@@ -20,6 +20,10 @@ import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.AudioSteganography
 import kotlinx.coroutines.delay
 import java.io.File
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
+import androidx.compose.ui.graphics.Color
+
 
 @Composable
 fun EncryptionProgressScreen(
@@ -98,7 +102,8 @@ fun EncryptionProgressScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(24.dp),
         verticalArrangement = Arrangement.Center,
@@ -120,7 +125,7 @@ fun EncryptionProgressScreen(
                 modifier = Modifier
                     .size(140.dp)
                     .scale(scale),
-                trackColor = AppColors.BorderLight
+                trackColor = Color.White
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -129,7 +134,7 @@ fun EncryptionProgressScreen(
                 text = "$percent%",
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +142,7 @@ fun EncryptionProgressScreen(
             Text(
                 text = "Encrypting your message...\nPlease wait.",
                 fontSize = 16.sp,
-                color = AppColors.TextSecondary,
+                color = Color.White,
                 textAlign = TextAlign.Center,
                 lineHeight = 24.sp
             )

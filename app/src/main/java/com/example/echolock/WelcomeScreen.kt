@@ -1,5 +1,7 @@
 package com.example.echolock.ui.screens
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -10,122 +12,143 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.echolock.ui.theme.AppColors
 import kotlinx.coroutines.delay
+import kotlin.math.sin
 
 @Composable
 fun WelcomeScreen(
     onFinished: () -> Unit
 ) {
-    /* ---------------- TIMING ---------------- */
-    val splashDuration = 2000L
-    val fadeOutDuration = 400L
-
-    /* ---------------- NAVIGATION ---------------- */
     LaunchedEffect(Unit) {
-        delay(splashDuration)
+        delay(2400)
         onFinished()
     }
 
-    /* ---------------- WAVE MOTION ---------------- */
-    val waveTransition = rememberInfiniteTransition(label = "wave")
-    val waveShift by waveTransition.animateFloat(
-        initialValue = -18f,
-        targetValue = 18f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2600, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "waveShift"
-    )
-
-    /* ---------------- LOGO PULSE ---------------- */
-    val pulseTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseScale by pulseTransition.animateFloat(
-        initialValue = 0.96f,
-        targetValue = 1.04f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseScale"
-    )
-
-    /* ---------------- FADE IN ---------------- */
-    val alphaAnim = remember { Animatable(0f) }
+    val fade = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
-        alphaAnim.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(900, easing = FastOutSlowInEasing)
-        )
+        fade.animateTo(1f, tween(800))
     }
+    val titleScale by rememberInfiniteTransition(label = "titleScale")
+        .animateFloat(
+            initialValue = 0.98f,
+            targetValue = 1.02f,
+            animationSpec = infiniteRepeatable(
+                tween(3000, easing = FastOutSlowInEasing),
+                RepeatMode.Reverse
+            ),
+            label = "titleScale"
+        )
+
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
-            .alpha(alphaAnim.value),
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color(0xFF0B132B),
+                        Color(0xFF1C2541),
+                        Color(0xFF3A506B)
+                    )
+                )
+            )
+            .alpha(fade.value),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            AudioSteganographyAnimation()
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = "EchoLock",
+                modifier = Modifier.scale(titleScale),
+                fontSize = 46.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                letterSpacing = 1.6.sp
+            )
+
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "A Audio Steganography",
+                fontSize = 18.sp,              // 🔥 More readable
+                color = Color(0xFFBEE7E8),
+                textAlign = TextAlign.Center,
+                letterSpacing = 0.6.sp
+            )
+
+        }
+    }
+}
+@Composable
+fun AudioSteganographyAnimation() {
+
+    val wavePhase by rememberInfiniteTransition(label = "wave")
+        .animateFloat(
+            initialValue = 0f,
+            targetValue = (2 * Math.PI).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(2600, easing = LinearEasing)
+            ),
+            label = "wavePhase"
+        )
+
+    val scale by rememberInfiniteTransition(label = "scale")
+        .animateFloat(
+            0.95f, 1.05f,
+            animationSpec = infiniteRepeatable(
+                tween(3000, easing = FastOutSlowInEasing),
+                RepeatMode.Reverse
+            ),
+            label = "scale"
+        )
+
+    Box(
+        modifier = Modifier
+            .size(260.dp)   // 🔥 BIG CENTER ANIMATION
+            .scale(scale),
         contentAlignment = Alignment.Center
     ) {
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.scale(pulseScale)
-        ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
 
-            /* ---------------- WAVE LOGO ---------------- */
-            Canvas(modifier = Modifier.size(120.dp)) {
-                val w = size.width
-                val h = size.height
-                val color = AppColors.PrimaryDark
+            val midY = size.height / 2
+            val step = size.width / 40
 
-                fun wave(y: Float, offset: Float) {
-                    val path = Path().apply {
-                        moveTo(0f, y)
-                        cubicTo(
-                            w * 0.25f, y - 14 + offset,
-                            w * 0.75f, y + 14 - offset,
-                            w, y
-                        )
-                    }
-                    drawPath(path, color)
-                }
+            // 🎧 Audio waveform
+            for (i in 0..40) {
+                val x = i * step
+                val amplitude = sin(wavePhase + i * 0.4f) * 40
 
-                wave(h * 0.35f, waveShift)
-                wave(h * 0.50f, -waveShift)
-                wave(h * 0.65f, waveShift)
+                drawLine(
+                    color = Color(0xFF5EEAD4),
+                    start = Offset(x, midY - amplitude),
+                    end = Offset(x, midY + amplitude),
+                    strokeWidth = 6f,
+                    cap = StrokeCap.Round
+                )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
-
-            /* ---------------- TITLE ---------------- */
-            Text(
-                text = "EchoLock",
-                fontSize = 38.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary,
-                letterSpacing = 1.2.sp,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            /* ---------------- SUBTITLE ---------------- */
-            Text(
-                text = "A Audio Steganography",
-                fontSize = 15.sp,
-                color = AppColors.TextSecondary,
-                letterSpacing = 0.6.sp,
-                textAlign = TextAlign.Center
-            )
+            // 🔹 Hidden data dots (steganography)
+            repeat(12) { i ->
+                drawCircle(
+                    color = Color(0xFF38BDF8),
+                    radius = 4f,
+                    center = Offset(
+                        x = (i * 20f + 40f) % size.width,
+                        y = midY + sin(wavePhase + i) * 25
+                    )
+                )
+            }
         }
     }
 }

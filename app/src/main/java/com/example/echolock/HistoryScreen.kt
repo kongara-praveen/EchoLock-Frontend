@@ -26,6 +26,8 @@ import com.example.echolock.R
 import com.example.echolock.model.HistoryItem
 import com.example.echolock.ui.common.BottomNavBar
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
 import com.example.echolock.viewmodel.HistoryViewModel
 
 @Composable
@@ -59,7 +61,7 @@ fun HistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
     ) {
         /* ---------------- CONTENT AREA ---------------- */
@@ -81,7 +83,7 @@ fun HistoryScreen(
                     modifier = Modifier
                         .size(28.dp)
                         .clickable { onBack() },
-                    tint = AppColors.TextPrimary
+                    tint = Color.White
                 )
 
                 Spacer(Modifier.width(12.dp))
@@ -90,7 +92,7 @@ fun HistoryScreen(
                     text = "History",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = AppColors.TextPrimary
+                    color = Color.White
                 )
 
                 Spacer(Modifier.weight(1f))
@@ -157,7 +159,7 @@ fun SectionTitle(text: String) {
         text = text,
         fontSize = 16.sp,
         fontWeight = FontWeight.SemiBold,
-        color = Color(0xFF6B7E80),
+        color = Color(0xFFBEE7E8),
         modifier = Modifier.padding(vertical = 8.dp)
     )
 }
@@ -167,16 +169,16 @@ fun SectionTitle(text: String) {
 fun HistoryCard(item: HistoryItem) {
 
     // Determine file type from action or file extension
-    val isImageFile = item.action.contains("Image", ignoreCase = true) || 
-                     item.fileName.endsWith(".png", ignoreCase = true) ||
-                     item.fileName.endsWith(".jpg", ignoreCase = true) ||
-                     item.fileName.endsWith(".jpeg", ignoreCase = true) ||
-                     item.fileName.endsWith(".webp", ignoreCase = true)
-    
+    val isImageFile = item.action.contains("Image", ignoreCase = true) ||
+            item.fileName.endsWith(".png", ignoreCase = true) ||
+            item.fileName.endsWith(".jpg", ignoreCase = true) ||
+            item.fileName.endsWith(".jpeg", ignoreCase = true) ||
+            item.fileName.endsWith(".webp", ignoreCase = true)
+
     val isAudioFile = item.action.contains("Audio", ignoreCase = true) ||
-                     item.fileName.endsWith(".wav", ignoreCase = true) ||
-                     item.fileName.endsWith(".mp3", ignoreCase = true) ||
-                     item.fileName.endsWith(".m4a", ignoreCase = true)
+            item.fileName.endsWith(".wav", ignoreCase = true) ||
+            item.fileName.endsWith(".mp3", ignoreCase = true) ||
+            item.fileName.endsWith(".m4a", ignoreCase = true)
 
     // Format action text
     val formattedAction = remember(item.action) {
@@ -188,22 +190,33 @@ fun HistoryCard(item: HistoryItem) {
         }
     }
 
+    val cardColor = when {
+        isImageFile -> FeatureCardColors.Orange.copy(alpha = 0.9f)
+        isAudioFile -> FeatureCardColors.Purple.copy(alpha = 0.9f)
+        else -> FeatureCardColors.Blue.copy(alpha = 0.9f)
+    }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Icon with circular background
+            // Icon with circular background - colorful based on file type
+            val iconColor = when {
+                isImageFile -> FeatureCardColors.Orange
+                isAudioFile -> FeatureCardColors.Purple
+                else -> FeatureCardColors.Blue
+            }
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        Color(0xFF006D77),
+                        iconColor,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -242,11 +255,12 @@ fun HistoryCard(item: HistoryItem) {
                 Text(
                     item.fileName,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
                 Text(
                     "$formattedAction • ${item.time}",
-                    color = Color.Gray,
+                    color = Color.White.copy(alpha = 0.8f),
                     fontSize = 13.sp
                 )
             }

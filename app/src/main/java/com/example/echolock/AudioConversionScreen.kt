@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
+import com.example.echolock.ui.theme.GradientBackgrounds
 
 @Composable
 fun AudioConversionScreen(
@@ -70,7 +71,7 @@ fun AudioConversionScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.Center,
@@ -85,7 +86,7 @@ fun AudioConversionScreen(
             CircularProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.size(120.dp),
-                color = AppColors.PrimaryDark,
+                color = Color.White,
                 strokeWidth = 8.dp,
                 trackColor = AppColors.BorderLight
             )
@@ -95,7 +96,7 @@ fun AudioConversionScreen(
                 text = "${(progress * 100).toInt()}%",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -105,7 +106,7 @@ fun AudioConversionScreen(
             text = error ?: "Converting audio to WAV…",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = if (error != null) AppColors.Error else AppColors.TextSecondary
+            color = if (error != null) AppColors.Error else Color.White
         )
 
         if (error == null) {
@@ -113,7 +114,7 @@ fun AudioConversionScreen(
             Text(
                 text = "Please wait while we process your audio file",
                 fontSize = 14.sp,
-                color = AppColors.TextTertiary
+                color = Color.White
             )
         }
     }

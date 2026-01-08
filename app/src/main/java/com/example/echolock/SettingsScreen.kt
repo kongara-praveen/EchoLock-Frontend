@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.ui.common.BottomNavBar
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
 
 @Composable
 fun SettingsScreen(
@@ -51,7 +53,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
     ) {
         Row(
@@ -62,14 +64,14 @@ fun SettingsScreen(
                 imageVector = Icons.Filled.ArrowBack,
                 contentDescription = null,
                 modifier = Modifier.size(28.dp).clickable { onBack() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 "Settings",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -125,15 +127,15 @@ fun SettingsScreen(
                         .padding(horizontal = 20.dp)
                         .clickable { onLogoutClick() },
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEAEA))
+                    colors = CardDefaults.cardColors(containerColor = FeatureCardColors.Red.copy(alpha = 0.9f))
                 ) {
                     Row(
                         modifier = Modifier.padding(18.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.Logout, null, tint = Color(0xFFE53935))
+                        Icon(Icons.Filled.Logout, null, tint = Color.White)
                         Spacer(Modifier.width(14.dp))
-                        Text("Log Out", color = Color(0xFFE53935), fontWeight = FontWeight.Bold)
+                        Text("Log Out", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -144,7 +146,7 @@ fun SettingsScreen(
                     "EchoLock v1.0.4 (Build 2025)",
                     modifier = Modifier.fillMaxWidth(),
                     fontSize = 12.sp,
-                    color = Color.Gray,
+                    color = Color(0xFF94A3B8),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
                 Spacer(Modifier.height(22.dp))
@@ -173,14 +175,16 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
             text = title,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
-            color = AppColors.TextSecondary,
+            color = Color(0xFFBEE7E8),
             modifier = Modifier.padding(vertical = 10.dp)
         )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(containerColor = AppColors.Surface)
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF1E293B).copy(alpha = 0.7f)
+            )
         ) {
             Column(Modifier.padding(12.dp)) { content() }
         }
@@ -198,10 +202,10 @@ fun SettingItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: St
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Icon(icon, null, tint = AppColors.PrimaryDark, modifier = Modifier.size(24.dp))
+        Icon(icon, null, tint = Color(0xFF38BDF8), modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(14.dp))
-        Text(label, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
+        Text(label, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = Color.White)
         Spacer(Modifier.weight(1f))
-        Icon(Icons.Filled.KeyboardArrowRight, null, tint = AppColors.TextSecondary)
+        Icon(Icons.Filled.KeyboardArrowRight, null, tint = Color(0xFFBEE7E8))
     }
 }

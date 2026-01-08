@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -21,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
-import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
 
 @Composable
 fun UserAccessScreen(
@@ -29,7 +30,6 @@ fun UserAccessScreen(
     onCreateAccountClick: () -> Unit
 ) {
 
-    // Screen entrance animation
     val alpha by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(durationMillis = 300),
@@ -39,70 +39,106 @@ fun UserAccessScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // 🔥 Same alignment top spacing as onboarding screens
         Spacer(modifier = Modifier.height(135.dp))
 
-        // Icon inside circle like onboarding
+        /* 🔵 APP ICON / LOGO */
         Box(
-            modifier = Modifier
-                .size(255.dp)
-                .background(AppColors.PrimaryLight.copy(alpha = 0.2f), CircleShape),
+            modifier = Modifier.size(260.dp),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_tamper), // or your logo
-                contentDescription = "logo",
-                modifier = Modifier.size(88.dp)
+
+            // Soft glow
+            Box(
+                modifier = Modifier
+                    .size(260.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF38BDF8).copy(alpha = 0.45f),
+                                Color.Transparent
+                            )
+                        ),
+                        CircleShape
+                    )
             )
+
+            // Solid inner circle
+            Box(
+                modifier = Modifier
+                    .size(165.dp)
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_tamper), // or app logo
+                    contentDescription = "App Logo",
+                    modifier = Modifier.size(96.dp),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                        Color(0xFF0F172A)
+                    )
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(55.dp))
 
+        /* 🔥 TITLE */
         Text(
-            "Welcome to EchoLock",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Black,
-            color = AppColors.TextPrimary,
+            text = "Welcome to EchoLock",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFFEAF6FF),
             textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
+        /* 📝 SUBTITLE */
         Text(
-            "The professional standard for steganography integrity verification.",
-            fontSize = 15.sp,
-            color = AppColors.TextSecondary,
-            textAlign = TextAlign.Center
+            text = "The professional standard for secure audio and image steganography.",
+            fontSize = 16.sp,
+            color = Color(0xFFBEE7E8),
+            textAlign = TextAlign.Center,
+            lineHeight = 22.sp
         )
 
         Spacer(modifier = Modifier.height(75.dp))
 
-        // 🔘 LOGIN BUTTON
+        /* ▶ LOGIN BUTTON */
         Button(
             onClick = onLoginClick,
-            modifier = Modifier.fillMaxWidth().height(55.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
-            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF38BDF8)
+            ),
+            shape = RoundedCornerShape(16.dp),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
                 pressedElevation = 2.dp
             )
         ) {
-            Text("Login", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = "Login",
+                color = Color.White,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // 🔗 CREATE ACCOUNT
+        /* 🔗 CREATE ACCOUNT */
         Text(
-            "Create Account",
-            color = AppColors.PrimaryDark,
+            text = "Create Account",
+            color = Color(0xFF38BDF8),
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable { onCreateAccountClick() }
@@ -110,12 +146,12 @@ fun UserAccessScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // 📝 Privacy Note
+        /* 📝 FOOTER NOTE */
         Text(
-            "By continuing, you agree to our Terms of Service and\nPrivacy Policy.",
+            text = "By continuing, you agree to our Terms of Service and\nPrivacy Policy.",
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
-            color = AppColors.TextTertiary
+            color = Color(0xFF94A3B8)
         )
     }
 }

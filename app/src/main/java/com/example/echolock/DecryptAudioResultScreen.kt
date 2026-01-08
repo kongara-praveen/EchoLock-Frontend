@@ -32,6 +32,8 @@ import com.example.echolock.util.HistoryTempStore
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.echolock.ui.theme.FeatureCardColors
+import com.example.echolock.ui.theme.GradientBackgrounds
 
 @Composable
 fun DecryptAudioResultScreen(
@@ -83,7 +85,8 @@ fun DecryptAudioResultScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -98,13 +101,13 @@ fun DecryptAudioResultScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { onDone() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 text = "Message Extracted",
                 fontSize = 22.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -117,10 +120,10 @@ fun DecryptAudioResultScreen(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        if (isPasswordError) AppColors.Error.copy(alpha = 0.1f)
-                        else AppColors.Success.copy(alpha = 0.1f),
+                        FeatureCardColors.Blue.copy(alpha = 0.25f),
                         RoundedCornerShape(50)
-                    ),
+                    )
+                ,
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -137,7 +140,7 @@ fun DecryptAudioResultScreen(
                 text = "Decryption Result",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -147,7 +150,12 @@ fun DecryptAudioResultScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = if (isPasswordError) AppColors.Error.copy(alpha = 0.1f) else AppColors.Surface
+                containerColor =
+                    if (isPasswordError)
+                        AppColors.Error.copy(alpha = 0.2f)
+                    else
+                        FeatureCardColors.Blue.copy(alpha = 0.9f)
+
             ),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -156,7 +164,8 @@ fun DecryptAudioResultScreen(
                     if (isPasswordError) "ERROR" else "EXTRACTED MESSAGE",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = if (isPasswordError) AppColors.Error else AppColors.TextPrimary
+                    color = if (isPasswordError) AppColors.Error else Color.White
+
                 )
 
                 Spacer(Modifier.height(14.dp))
@@ -192,7 +201,7 @@ fun DecryptAudioResultScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = AppColors.PrimaryDark
+                contentColor = Color.White
             ),
             shape = RoundedCornerShape(14.dp)
         ) {
@@ -200,7 +209,7 @@ fun DecryptAudioResultScreen(
                 painter = painterResource(id = R.drawable.ic_copy),
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
-                tint = AppColors.PrimaryDark
+                tint = Color.White
             )
             Spacer(Modifier.width(8.dp))
             Text(
@@ -222,7 +231,8 @@ fun DecryptAudioResultScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+            colors = ButtonDefaults.buttonColors(containerColor = FeatureCardColors.Blue
+            ),
             shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,

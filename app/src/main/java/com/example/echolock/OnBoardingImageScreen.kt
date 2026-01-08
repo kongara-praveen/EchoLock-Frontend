@@ -1,6 +1,7 @@
 package com.example.echolock.ui.screens
 
 // 🔥 Required Imports (DON'T MISS)
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,11 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
 
 @Composable
-fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
+fun OnBoardingImageScreen(
+    onContinue: () -> Unit,
+    onSkip: () -> Unit
+) {
 
-    // Screen entrance animation
     val alpha by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(durationMillis = 300),
@@ -37,93 +41,139 @@ fun OnBoardingImageScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Spacer(modifier = Modifier.height(135.dp))   // same as audio & tamper
+        Spacer(modifier = Modifier.height(135.dp))
 
+        /* 🖼️ IMAGE ICON – HIGH VISIBILITY (MATCHES AUDIO SCREEN) */
         Box(
-            modifier = Modifier
-                .size(255.dp)
-                .background(AppColors.PrimaryLight.copy(alpha = 0.2f), CircleShape),
+            modifier = Modifier.size(260.dp),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_image),
-                contentDescription = "image icon",
-                modifier = Modifier.size(88.dp)
+
+            // 🌈 Outer glow
+            Box(
+                modifier = Modifier
+                    .size(260.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF38BDF8).copy(alpha = 0.45f),
+                                Color.Transparent
+                            )
+                        ),
+                        CircleShape
+                    )
             )
+
+            // ⚪ Solid inner circle (contrast layer)
+            Box(
+                modifier = Modifier
+                    .size(165.dp)
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+
+                // 🖼️ IMAGE ICON (DARK FOR CONTRAST)
+                Image(
+                    painter = painterResource(id = R.drawable.ic_image),
+                    contentDescription = "Image Icon",
+                    modifier = Modifier.size(100.dp),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                        Color(0xFF0F172A) // dark slate
+                    )
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(55.dp))
+        Spacer(modifier = Modifier.height(52.dp))
 
-        Text("Hide Messages in Images",
-            fontSize = 22.sp, fontWeight = FontWeight.Black, color = AppColors.TextPrimary
+        /* 🔥 TITLE */
+        Text(
+            text = "Hide Messages in Images",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp,
+            color = Color.White
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
+        /* 📝 DESCRIPTION */
         Text(
-            text = "Embed secret data inside image pixels using LSB algorithms",
-            fontSize = 15.sp, color = AppColors.TextSecondary, textAlign = TextAlign.Center
+            text = "Securely embed secret data inside image pixels using LSB steganography",
+            fontSize = 16.sp,
+            color = Color(0xFFBEE7E8),
+            textAlign = TextAlign.Center,
+            lineHeight = 22.sp
         )
 
-        Spacer(modifier = Modifier.height(75.dp))
+        Spacer(modifier = Modifier.height(72.dp))
 
+        /* 🔘 PAGE INDICATORS */
         Row(
-            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // ○ First (inactive)
             Box(
                 modifier = Modifier
                     .size(7.dp)
-                    .background(AppColors.BorderLight, CircleShape)
+                    .background(Color.White.copy(alpha = 0.35f), CircleShape)
             )
 
             Spacer(Modifier.width(10.dp))
 
-            // ● Second (active)
             Box(
                 modifier = Modifier
                     .size(10.dp)
-                    .background(AppColors.PrimaryDark, CircleShape)
+                    .background(Color(0xFF38BDF8), CircleShape)
             )
 
             Spacer(Modifier.width(10.dp))
 
-            // ○ Third (inactive)
             Box(
                 modifier = Modifier
                     .size(7.dp)
-                    .background(AppColors.BorderLight, CircleShape)
+                    .background(Color.White.copy(alpha = 0.35f), CircleShape)
             )
         }
 
-
-
         Spacer(modifier = Modifier.height(58.dp))
 
+        /* ▶ CONTINUE BUTTON */
         Button(
             onClick = onContinue,
-            modifier = Modifier.fillMaxWidth().height(55.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
-            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF38BDF8)
+            ),
+            shape = RoundedCornerShape(16.dp),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
                 pressedElevation = 2.dp
             )
-        ) { Text("Continue", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold) }
+        ) {
+            Text(
+                text = "Continue",
+                color = Color.White,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        Text("Skip",
-            color = AppColors.TextSecondary,
+        /* ⏭ SKIP */
+        Text(
+            text = "Skip",
+            color = Color(0xFFBEE7E8),
             fontSize = 14.sp,
             modifier = Modifier.clickable { onSkip() }
         )

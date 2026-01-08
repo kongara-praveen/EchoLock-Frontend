@@ -34,6 +34,10 @@ import coil.compose.AsyncImage
 import com.example.echolock.R
 import com.example.echolock.session.UserSession
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
+
+
 
 @Composable
 fun DecryptImageScreen(
@@ -73,7 +77,8 @@ fun DecryptImageScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -89,14 +94,14 @@ fun DecryptImageScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { onBack() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 "Decrypt Image",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -109,8 +114,16 @@ fun DecryptImageScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .border(2.dp, AppColors.BorderLight, RoundedCornerShape(16.dp))
-                    .background(AppColors.Surface, RoundedCornerShape(16.dp))
+                    .border(
+                        2.dp,
+                        FeatureCardColors.Orange,
+                        RoundedCornerShape(16.dp)
+                    )
+                    .background(
+                        FeatureCardColors.Orange.copy(alpha = 0.9f),
+                        RoundedCornerShape(16.dp)
+                    )
+
                     .clickable { imagePickerLauncher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
@@ -126,13 +139,13 @@ fun DecryptImageScreen(
                         "Select Encrypted Image",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = AppColors.TextPrimary
+                        color = Color.White
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         "Tap to extract hidden message",
                         fontSize = 13.sp,
-                        color = AppColors.TextSecondary
+                        color = Color.White.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -143,7 +156,7 @@ fun DecryptImageScreen(
                 "Selected Image",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
@@ -166,7 +179,8 @@ fun DecryptImageScreen(
 
             Text(
                 "Tap image to reselect",
-                color = AppColors.PrimaryDark,
+                color = Color.White
+                ,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.clickable {
@@ -190,7 +204,7 @@ fun DecryptImageScreen(
                     "Enter Password",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
-                    color = AppColors.TextPrimary,
+                    color=Color.White,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -201,7 +215,7 @@ fun DecryptImageScreen(
                     placeholder = {
                         Text(
                             "Enter password to decrypt",
-                            color = AppColors.TextTertiary
+                            color = Color.White.copy(alpha = 0.8f)
                         )
                     },
                     singleLine = true,
@@ -211,23 +225,23 @@ fun DecryptImageScreen(
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                                 contentDescription = null,
-                                tint = AppColors.TextSecondary
+                                tint = Color.White
                             )
                         }
                     },
                     textStyle = TextStyle(
                         fontSize = 16.sp,
-                        color = AppColors.TextPrimary,
+                        color = Color.White,
                         fontWeight = FontWeight.Normal
                     ),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = AppColors.TextPrimary,
-                        unfocusedTextColor = AppColors.TextPrimary,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
                         focusedBorderColor = AppColors.PrimaryDark,
                         unfocusedBorderColor = AppColors.BorderLight,
                         cursorColor = AppColors.PrimaryDark,
-                        focusedPlaceholderColor = AppColors.TextTertiary,
-                        unfocusedPlaceholderColor = AppColors.TextTertiary
+                        focusedPlaceholderColor = Color.White.copy(alpha = 0.8f),
+                        unfocusedPlaceholderColor = Color.White.copy(alpha = 0.8f)
                     ),
                     shape = RoundedCornerShape(14.dp)
                 )
@@ -256,9 +270,10 @@ fun DecryptImageScreen(
                 .alpha(buttonAlpha),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
-            ),
+                containerColor = FeatureCardColors.Orange,
+                disabledContainerColor = Color(0xFF475569)
+            )
+            ,
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
                 pressedElevation = 2.dp

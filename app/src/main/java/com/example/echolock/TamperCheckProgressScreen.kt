@@ -22,6 +22,8 @@ import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.TamperCheckUtil
 import com.example.echolock.util.uriToFile
 import kotlinx.coroutines.delay
+import com.example.echolock.ui.theme.GradientBackgrounds
+
 
 @Composable
 fun TamperCheckProgressScreen(
@@ -80,7 +82,8 @@ fun TamperCheckProgressScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(24.dp),
         verticalArrangement = Arrangement.Center,
@@ -89,7 +92,7 @@ fun TamperCheckProgressScreen(
 
         CircularProgressIndicator(
             progress = progress,
-            color = AppColors.PrimaryDark,
+            color = Color.White,
             strokeWidth = 8.dp,
             modifier = Modifier
                 .size(140.dp)
@@ -103,7 +106,7 @@ fun TamperCheckProgressScreen(
             text = "$percent%",
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary
+            color = Color.White
         )
 
         Spacer(Modifier.height(16.dp))
@@ -111,7 +114,7 @@ fun TamperCheckProgressScreen(
         Text(
             text = "Checking file integrity...\nPlease wait.",
             textAlign = TextAlign.Center,
-            color = AppColors.TextSecondary,
+            color = Color.White,
             fontSize = 16.sp,
             lineHeight = 24.sp
         )

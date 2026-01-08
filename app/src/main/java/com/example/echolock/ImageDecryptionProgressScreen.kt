@@ -22,6 +22,8 @@ import com.example.echolock.session.UserSession
 import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.ImageSteganography
 import kotlinx.coroutines.delay
+import com.example.echolock.ui.theme.GradientBackgrounds
+
 
 @Composable
 fun ImageDecryptionProgressScreen(
@@ -127,13 +129,14 @@ fun ImageDecryptionProgressScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background),
+            .background(GradientBackgrounds.PrimaryGradient)
+        ,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
             progress = progress / 100f,
-            color = AppColors.PrimaryDark,
+            color = Color.White,
             strokeWidth = 6.dp,
             modifier = Modifier
                 .size(110.dp)
@@ -146,7 +149,7 @@ fun ImageDecryptionProgressScreen(
             text = "$progress%",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary
+            color = Color.White
         )
 
         Spacer(Modifier.height(8.dp))
@@ -154,7 +157,7 @@ fun ImageDecryptionProgressScreen(
         Text(
             text = "Decrypting image...",
             fontSize = 16.sp,
-            color = AppColors.TextSecondary
+            color = Color.White
         )
     }
 }

@@ -2,6 +2,7 @@ package com.example.echolock.util
 
 import android.content.ContentValues
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import java.io.File
@@ -38,11 +39,16 @@ object SaveStegoAudio {
         return try {
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
+                // Use correct MIME type for WAV files - Android recognizes this better
+                put(MediaStore.MediaColumns.MIME_TYPE, "audio/x-wav")
                 put(
                     MediaStore.MediaColumns.RELATIVE_PATH,
                     Environment.DIRECTORY_DOWNLOADS + "/EchoLock"
                 )
+                // Set IS_PENDING to 1 during write (Android 10+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    put(MediaStore.MediaColumns.IS_PENDING, 1)
+                }
             }
 
             val uri = resolver.insert(
@@ -50,13 +56,20 @@ object SaveStegoAudio {
                 contentValues
             ) ?: return false
 
-            val outputStream: OutputStream =
-                resolver.openOutputStream(uri) ?: return false
-
-            FileInputStream(stegoFile).use { input ->
-                outputStream.use { output ->
+            // Write the file data
+            resolver.openOutputStream(uri)?.use { output ->
+                FileInputStream(stegoFile).use { input ->
                     input.copyTo(output)
+                    output.flush()
                 }
+            } ?: return false
+
+            // Mark as not pending so MediaStore indexes it properly (Android 10+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val updateValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.IS_PENDING, 0)
+                }
+                resolver.update(uri, updateValues, null, null)
             }
 
             true

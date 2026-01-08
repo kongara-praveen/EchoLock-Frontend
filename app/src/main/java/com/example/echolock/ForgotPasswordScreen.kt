@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
 import com.example.echolock.api.GenericResponse
 import com.example.echolock.api.RetrofitClient
 import com.example.echolock.session.UserSession
@@ -51,7 +52,7 @@ fun ForgotPasswordScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.Start
@@ -73,7 +74,7 @@ fun ForgotPasswordScreen(
             text = "Forgot Password",
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary
+            color = Color.White
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -81,7 +82,7 @@ fun ForgotPasswordScreen(
         Text(
             text = "Enter your email to receive verification code.",
             fontSize = 15.sp,
-            color = AppColors.TextSecondary
+            color = Color(0xFFBEE7E8)
         )
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -89,24 +90,26 @@ fun ForgotPasswordScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email Address", color = AppColors.TextTertiary) },
+            label = { Text("Email Address", color = Color(0xFF94A3B8)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
             singleLine = true,
             enabled = !loading,
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Normal
             ),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = AppColors.TextPrimary,
-                unfocusedTextColor = AppColors.TextPrimary,
-                focusedBorderColor = AppColors.PrimaryDark,
-                unfocusedBorderColor = AppColors.BorderLight,
-                cursorColor = AppColors.PrimaryDark,
-                focusedPlaceholderColor = AppColors.TextTertiary,
-                unfocusedPlaceholderColor = AppColors.TextTertiary
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedBorderColor = Color(0xFF38BDF8),
+                unfocusedBorderColor = Color(0xFF475569),
+                cursorColor = Color(0xFF38BDF8),
+                focusedPlaceholderColor = Color(0xFF94A3B8),
+                unfocusedPlaceholderColor = Color(0xFF94A3B8),
+                focusedContainerColor = Color(0xFF1E293B).copy(alpha = 0.6f),
+                unfocusedContainerColor = Color(0xFF1E293B).copy(alpha = 0.4f)
             )
         )
 
@@ -119,8 +122,8 @@ fun ForgotPasswordScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
+                containerColor = Color(0xFF38BDF8),
+                disabledContainerColor = Color(0xFF475569)
             ),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,

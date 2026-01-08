@@ -29,6 +29,8 @@ import com.example.echolock.R
 import com.example.echolock.api.*
 import com.example.echolock.session.UserSession
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -49,17 +51,17 @@ fun SelectAudioScreen(
 
     // Restore state from UserSession
     var selectedFile by remember { mutableStateOf<File?>(null) }
-    var selectedUri by remember { 
+    var selectedUri by remember {
         mutableStateOf<Uri?>(
             UserSession.selectedAudioUriString?.let { Uri.parse(it) }
         )
     }
-    var selectedFileName by remember { 
+    var selectedFileName by remember {
         mutableStateOf<String?>(UserSession.originalAudioName)
     }
     var recentAudios by remember { mutableStateOf<List<AudioItem>>(emptyList()) }
     var isUploading by remember { mutableStateOf(false) }
-    
+
     // Restore file if URI exists (only on initial load)
     LaunchedEffect(Unit) {
         selectedUri?.let { uri ->
@@ -197,7 +199,7 @@ fun SelectAudioScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -211,14 +213,14 @@ fun SelectAudioScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { onBack() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 "Select Audio",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -232,8 +234,8 @@ fun SelectAudioScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(AppColors.Surface, RoundedCornerShape(16.dp))
-                    .border(2.dp, AppColors.BorderLight, RoundedCornerShape(16.dp))
+                    .background(FeatureCardColors.Purple.copy(alpha = 0.9f), RoundedCornerShape(16.dp))
+                    .border(2.dp, FeatureCardColors.Purple, RoundedCornerShape(16.dp))
                     .clickable { picker.launch(arrayOf("audio/*")) }
                     .padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -242,20 +244,20 @@ fun SelectAudioScreen(
                     painter = painterResource(R.drawable.ic_upload),
                     contentDescription = null,
                     modifier = Modifier.size(56.dp),
-                    tint = AppColors.PrimaryDark
+                    tint = Color.White
                 )
                 Spacer(Modifier.height(12.dp))
                 Text(
                     "Tap to Upload Audio",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = AppColors.TextPrimary
+                    color = Color.White
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
                     "Supports MP3, WAV, FLAC, AAC",
                     fontSize = 13.sp,
-                    color = AppColors.TextSecondary
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
         }
@@ -299,7 +301,7 @@ fun SelectAudioScreen(
             "Recent Files",
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
-            color = AppColors.TextPrimary
+            color = Color.White
         )
         Spacer(Modifier.height(12.dp))
 
@@ -329,8 +331,8 @@ fun SelectAudioScreen(
                 .height(56.dp)
                 .alpha(buttonAlpha),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
+                containerColor = FeatureCardColors.Blue,
+                disabledContainerColor = Color(0xFF475569)
             ),
             shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(
@@ -363,14 +365,14 @@ fun AudioListItem(fileName: String, size: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(AppColors.Surface, RoundedCornerShape(14.dp))
+            .background(FeatureCardColors.Purple.copy(alpha = 0.9f), RoundedCornerShape(14.dp))
             .padding(16.dp)
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_music),
             contentDescription = null,
             modifier = Modifier.size(28.dp),
-            tint = AppColors.PrimaryDark
+            tint = Color.White
         )
         Spacer(Modifier.width(12.dp))
         Column {
@@ -378,13 +380,13 @@ fun AudioListItem(fileName: String, size: String) {
                 fileName,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 size,
                 fontSize = 13.sp,
-                color = AppColors.TextSecondary
+                color = Color.White.copy(alpha = 0.8f)
             )
         }
     }

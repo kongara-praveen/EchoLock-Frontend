@@ -27,6 +27,9 @@ import com.example.echolock.util.SaveStegoAudio
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
+
 
 @Composable
 fun EncryptionCompleteScreen(
@@ -68,7 +71,7 @@ fun EncryptionCompleteScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 28.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -95,7 +98,7 @@ fun EncryptionCompleteScreen(
             text = "Encryption Complete",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary,
+            color = Color.White,
             textAlign = TextAlign.Center
         )
 
@@ -104,7 +107,7 @@ fun EncryptionCompleteScreen(
         Text(
             text = "Your message has been securely hidden inside the audio file.",
             fontSize = 16.sp,
-            color = AppColors.TextSecondary,
+            color = Color.White,
             textAlign = TextAlign.Center
         )
 
@@ -158,10 +161,11 @@ fun EncryptionCompleteScreen(
                 .height(56.dp)
                 .alpha(buttonAlpha),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
+                containerColor = FeatureCardColors.Blue,
+                disabledContainerColor = Color(0xFF475569)
             ),
-            shape = RoundedCornerShape(14.dp),
+
+                    shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
                 pressedElevation = 2.dp
@@ -180,15 +184,18 @@ fun EncryptionCompleteScreen(
         /* 📊 SECURITY REPORT */
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(AppColors.Surface),
+            colors = CardDefaults.cardColors(
+                containerColor = FeatureCardColors.Blue.copy(alpha = 0.9f)
+            ),
             shape = RoundedCornerShape(16.dp)
-        ) {
+        )
+        {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = "Security Report",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = AppColors.TextPrimary
+                    color = Color.White
                 )
 
                 Spacer(Modifier.height(18.dp))
@@ -211,7 +218,7 @@ fun EncryptionCompleteScreen(
         /* 🔙 BACK */
         Text(
             text = "Back to Dashboard",
-            color = AppColors.PrimaryDark,
+            color = Color.White,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable {
@@ -231,12 +238,17 @@ fun ReportItem(label: String, value: String) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = AppColors.TextSecondary, fontSize = 14.sp)
+        Text(
+            label,
+            color = Color.White.copy(alpha = 0.8f),
+            fontSize = 14.sp
+        )
         Text(
             value,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary,
+            color = Color.White,
             fontSize = 14.sp
         )
+
     }
 }

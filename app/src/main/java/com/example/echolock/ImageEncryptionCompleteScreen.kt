@@ -30,6 +30,10 @@ import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.HistoryTempStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
+
+
 
 @Composable
 fun ImageEncryptionCompleteScreen(
@@ -70,7 +74,8 @@ fun ImageEncryptionCompleteScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 28.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -79,7 +84,7 @@ fun ImageEncryptionCompleteScreen(
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
-            tint = AppColors.Success,
+            tint = Color.White,
             modifier = Modifier.size(110.dp)
         )
 
@@ -89,7 +94,7 @@ fun ImageEncryptionCompleteScreen(
             text = "Encryption Complete",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary
+            color = Color.White
         )
 
         Spacer(Modifier.height(12.dp))
@@ -98,7 +103,7 @@ fun ImageEncryptionCompleteScreen(
             text = "Your message has been securely hidden within the image.",
             textAlign = TextAlign.Center,
             fontSize = 16.sp,
-            color = AppColors.TextSecondary
+            color = Color.White.copy(alpha = 0.85f)
         )
 
         Spacer(Modifier.height(32.dp))
@@ -107,7 +112,11 @@ fun ImageEncryptionCompleteScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = FeatureCardColors.Pink,
+                disabledContainerColor = Color(0xFF475569)
+            )
+            ,
             shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
@@ -124,7 +133,8 @@ fun ImageEncryptionCompleteScreen(
 
         Text(
             text = "Back to Dashboard",
-            color = AppColors.PrimaryDark,
+            color = Color.White
+            ,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable { 

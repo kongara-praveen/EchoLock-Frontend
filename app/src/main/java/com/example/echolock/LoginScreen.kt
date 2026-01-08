@@ -30,6 +30,7 @@ import com.example.echolock.api.LoginResponse
 import com.example.echolock.api.RetrofitClient
 import com.example.echolock.session.UserSession
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -59,7 +60,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.Start
@@ -73,7 +74,7 @@ fun LoginScreen(
             modifier = Modifier
                 .size(28.dp)
                 .clickable { onBack() },
-            tint = AppColors.TextPrimary
+            tint = Color.White
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -82,7 +83,7 @@ fun LoginScreen(
             "Welcome Back",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary
+            color = Color.White
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -90,7 +91,7 @@ fun LoginScreen(
         Text(
             "Sign in to access your secure dashboard.",
             fontSize = 15.sp,
-            color = AppColors.TextSecondary,
+            color = Color(0xFFBEE7E8),
             lineHeight = 22.sp
         )
 
@@ -101,7 +102,7 @@ fun LoginScreen(
             "Email Address",
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = AppColors.TextPrimary,
+            color = Color.White,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         OutlinedTextField(
@@ -110,7 +111,7 @@ fun LoginScreen(
             placeholder = {
                 Text(
                     "name@gmail.com",
-                    color = AppColors.TextTertiary
+                    color = Color(0xFF94A3B8)
                 )
             },
             modifier = Modifier.fillMaxWidth(),
@@ -119,18 +120,20 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Normal
             ),
             shape = RoundedCornerShape(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = AppColors.PrimaryDark,
-                unfocusedBorderColor = AppColors.BorderLight,
-                cursorColor = AppColors.PrimaryDark,
-                focusedTextColor = AppColors.TextPrimary,
-                unfocusedTextColor = AppColors.TextPrimary,
-                focusedPlaceholderColor = AppColors.TextTertiary,
-                unfocusedPlaceholderColor = AppColors.TextTertiary
+                focusedBorderColor = Color(0xFF38BDF8),
+                unfocusedBorderColor = Color(0xFF475569),
+                cursorColor = Color(0xFF38BDF8),
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedPlaceholderColor = Color(0xFF94A3B8),
+                unfocusedPlaceholderColor = Color(0xFF94A3B8),
+                focusedContainerColor = Color(0xFF1E293B).copy(alpha = 0.6f),
+                unfocusedContainerColor = Color(0xFF1E293B).copy(alpha = 0.4f)
             )
         )
 
@@ -141,7 +144,7 @@ fun LoginScreen(
             "Password",
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = AppColors.TextPrimary,
+            color = Color.White,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         OutlinedTextField(
@@ -150,7 +153,7 @@ fun LoginScreen(
             placeholder = {
                 Text(
                     "••••••••",
-                    color = AppColors.TextTertiary
+                    color = Color(0xFF94A3B8)
                 )
             },
             modifier = Modifier.fillMaxWidth(),
@@ -166,24 +169,26 @@ fun LoginScreen(
                             Icons.Filled.VisibilityOff
                         else Icons.Filled.Visibility,
                         contentDescription = null,
-                        tint = AppColors.TextSecondary
+                        tint = Color(0xFFBEE7E8)
                     )
                 }
             },
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Normal
             ),
             shape = RoundedCornerShape(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = AppColors.PrimaryDark,
-                unfocusedBorderColor = AppColors.BorderLight,
-                cursorColor = AppColors.PrimaryDark,
-                focusedTextColor = AppColors.TextPrimary,
-                unfocusedTextColor = AppColors.TextPrimary,
-                focusedPlaceholderColor = AppColors.TextTertiary,
-                unfocusedPlaceholderColor = AppColors.TextTertiary
+                focusedBorderColor = Color(0xFF38BDF8),
+                unfocusedBorderColor = Color(0xFF475569),
+                cursorColor = Color(0xFF38BDF8),
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedPlaceholderColor = Color(0xFF94A3B8),
+                unfocusedPlaceholderColor = Color(0xFF94A3B8),
+                focusedContainerColor = Color(0xFF1E293B).copy(alpha = 0.6f),
+                unfocusedContainerColor = Color(0xFF1E293B).copy(alpha = 0.4f)
             )
         )
 
@@ -191,7 +196,7 @@ fun LoginScreen(
 
         Text(
             "Forgot Password?",
-            color = AppColors.PrimaryDark,
+            color = Color(0xFF38BDF8),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier
@@ -209,7 +214,7 @@ fun LoginScreen(
             animationSpec = tween(durationMillis = 200),
             label = "button_alpha"
         )
-        
+
         Button(
             onClick = {
                 val cleanEmail = email.trim()
@@ -276,8 +281,8 @@ fun LoginScreen(
                 .alpha(buttonAlpha),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
+                containerColor = Color(0xFF38BDF8),
+                disabledContainerColor = Color(0xFF475569)
             ),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
@@ -301,16 +306,31 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text("Don't have an account? ", color = AppColors.TextSecondary, fontSize = 14.sp)
+            Text("Don't have an account? ", color = Color(0xFFBEE7E8), fontSize = 14.sp)
             Text(
                 "Sign Up",
-                color = AppColors.PrimaryDark,
+                color = Color(0xFF38BDF8),
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 modifier = Modifier.clickable { onSignUp() }
             )
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "2026 © Powered  by SIMATS Engineering",
+            fontSize = 12.sp,
+            color = Color(0xFF94A3B8),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+
+
     }
 }

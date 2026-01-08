@@ -34,6 +34,8 @@ import com.example.echolock.api.GenericResponse
 import com.example.echolock.api.RetrofitClient
 import com.example.echolock.session.UserSession
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
 import com.example.echolock.util.HistoryTempStore
 import com.example.echolock.util.uriToFile
 import okhttp3.MediaType.Companion.toMediaType
@@ -52,13 +54,13 @@ fun SelectImageScreen(
     val context = LocalContext.current
 
     // Restore state from UserSession
-    var selectedImageUri by remember { 
+    var selectedImageUri by remember {
         val uriString = UserSession.selectedImageUriString
         mutableStateOf<Uri?>(
             if (uriString != null) Uri.parse(uriString) else null
         )
     }
-    var uploadedImageUri by remember { 
+    var uploadedImageUri by remember {
         val uriString = UserSession.selectedImageUriString
         mutableStateOf<Uri?>(
             if (uriString != null) Uri.parse(uriString) else null
@@ -123,7 +125,7 @@ fun SelectImageScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -139,14 +141,14 @@ fun SelectImageScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { onBack() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 "Select Image",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -158,8 +160,8 @@ fun SelectImageScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .border(2.dp, AppColors.BorderLight, RoundedCornerShape(16.dp))
-                    .background(AppColors.Surface, RoundedCornerShape(16.dp))
+                    .border(2.dp, FeatureCardColors.Pink, RoundedCornerShape(16.dp))
+                    .background(FeatureCardColors.Pink.copy(alpha = 0.9f), RoundedCornerShape(16.dp))
                     .clickable(enabled = !isUploading) {
                         imagePickerLauncher.launch("image/*")
                     },
@@ -169,20 +171,21 @@ fun SelectImageScreen(
                     Image(
                         painter = painterResource(id = R.drawable.ic_upload),
                         contentDescription = "Upload",
-                        modifier = Modifier.size(56.dp)
+                        modifier = Modifier.size(56.dp),
+                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color.White)
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
                         "Tap to Upload Image",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = AppColors.TextPrimary
+                        color = Color.White
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         text = if (isUploading) "Uploading..." else "Supports PNG, JPG, WEBP",
                         fontSize = 13.sp,
-                        color = AppColors.TextSecondary
+                        color = Color.White.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -193,7 +196,7 @@ fun SelectImageScreen(
                 text = "Selected Image Preview",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
@@ -218,7 +221,7 @@ fun SelectImageScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = AppColors.TextSecondary
+                    contentColor = Color.White
                 )
             ) {
                 Text("Re-select Image", fontSize = 15.sp)
@@ -235,7 +238,7 @@ fun SelectImageScreen(
             animationSpec = tween(durationMillis = 200),
             label = "button_alpha"
         )
-        
+
         Button(
             onClick = {
                 uploadedImageUri?.let {
@@ -249,8 +252,8 @@ fun SelectImageScreen(
                 .alpha(buttonAlpha),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
+                containerColor = FeatureCardColors.Pink,
+                disabledContainerColor = Color(0xFF475569)
             ),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
@@ -264,7 +267,7 @@ fun SelectImageScreen(
                 fontWeight = FontWeight.SemiBold
             )
         }
-        
+
         Spacer(Modifier.height(8.dp))
     }
 }

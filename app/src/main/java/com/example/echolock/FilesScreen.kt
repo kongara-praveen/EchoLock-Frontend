@@ -56,7 +56,7 @@ fun FilesScreen(
         Log.d("FilesScreen", "UserSession.userId: ${UserSession.userId}, parsed userId: $userId")
         viewModel.loadFiles(userId = userId)
     }
-    
+
     // Show error if any
     LaunchedEffect(error) {
         error?.let {
@@ -90,7 +90,7 @@ fun FilesScreen(
                 Spacer(Modifier.width(10.dp))
                 Text("Files", fontSize = 22.sp, fontWeight = FontWeight.Bold)
             }
-            
+
             // Refresh button
             IconButton(
                 onClick = {
@@ -160,7 +160,7 @@ fun FilesScreen(
                     FileItemCard(
                         file = file,
                         onFileClick = { onFileClick(file) },
-                        onDelete = { 
+                        onDelete = {
                             showDeleteDialog = file
                         },
                         onShare = { viewModel.shareFile(context, file) },
@@ -189,18 +189,18 @@ fun FilesScreen(
     showDeleteDialog?.let { file ->
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
-            title = { 
+            title = {
                 Text(
                     "Delete File",
                     color = AppColors.TextPrimary,
                     fontWeight = FontWeight.Bold
-                ) 
+                )
             },
-            text = { 
+            text = {
                 Text(
                     "Are you sure you want to delete \"${file.name}\"? This action cannot be undone.",
                     color = AppColors.TextSecondary
-                ) 
+                )
             },
             confirmButton = {
                 TextButton(
@@ -290,7 +290,7 @@ fun FileItemCard(
                         tint = AppColors.TextSecondary
                     )
                 }
-                
+
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }

@@ -5,6 +5,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.echolock.session.UserSession
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -255,11 +256,25 @@ fun AppNavigation() {
                 onHistoryClick = { navController.navigate(Screen.History.route) },
                 onSettingsClick = { navController.navigate(Screen.Settings.route) },
                 onFileClick = { file ->
-                    UserSession.selectedFile = file
-                    if (file.type == "audio") {
-                        navController.navigate(Screen.AudioFileDetail.route)
-                    } else {
-                        navController.navigate(Screen.ImageFileDetail.route)
+                    try {
+                        android.util.Log.d("AppNavigation", "File clicked: ${file.name}, type: ${file.type}, id: ${file.file_id}")
+                        // Validate file before navigation
+                        if (file.name.isNotBlank()) {
+                            UserSession.selectedFile = file
+                            android.util.Log.d("AppNavigation", "Selected file set, navigating...")
+                            if (file.type == "audio") {
+                                navController.navigate(Screen.AudioFileDetail.route)
+                            } else if (file.type == "image") {
+                                navController.navigate(Screen.ImageFileDetail.route)
+                            } else {
+                                android.util.Log.e("AppNavigation", "Unknown file type: ${file.type}")
+                            }
+                        } else {
+                            android.util.Log.e("AppNavigation", "File name is blank, cannot navigate")
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("AppNavigation", "Error navigating to file detail", e)
+                        e.printStackTrace()
                     }
                 }
             )
@@ -267,7 +282,8 @@ fun AppNavigation() {
         
         /* FILE DETAILS */
         composable(Screen.AudioFileDetail.route) {
-            UserSession.selectedFile?.let { file ->
+            val file = UserSession.selectedFile
+            if (file != null) {
                 AudioFileDetailScreen(
                     file = file,
                     onBack = { navController.popBackStack() },
@@ -276,11 +292,17 @@ fun AppNavigation() {
                         navController.popBackStack()
                     }
                 )
+            } else {
+                // Fallback UI when file is null - navigate back immediately
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
             }
         }
         
         composable(Screen.ImageFileDetail.route) {
-            UserSession.selectedFile?.let { file ->
+            val file = UserSession.selectedFile
+            if (file != null) {
                 ImageFileDetailScreen(
                     file = file,
                     onBack = { navController.popBackStack() },
@@ -289,6 +311,11 @@ fun AppNavigation() {
                         navController.popBackStack()
                     }
                 )
+            } else {
+                // Fallback UI when file is null - navigate back immediately
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
             }
         }
 

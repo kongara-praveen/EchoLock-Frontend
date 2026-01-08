@@ -24,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import com.example.echolock.ui.theme.GradientBackgrounds
 
 @Composable
 fun AudioDecryptionProgressScreen(
@@ -87,13 +88,13 @@ fun AudioDecryptionProgressScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background),
+            .background(GradientBackgrounds.PrimaryGradient),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CircularProgressIndicator(
             progress = progress / 100f,
-            color = AppColors.PrimaryDark,
+            color = Color.White,
             strokeWidth = 6.dp,
             modifier = Modifier
                 .size(110.dp)
@@ -106,7 +107,7 @@ fun AudioDecryptionProgressScreen(
             text = "$progress%",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = AppColors.TextPrimary
+            color = Color.White
         )
 
         Spacer(Modifier.height(8.dp))
@@ -114,7 +115,7 @@ fun AudioDecryptionProgressScreen(
         Text(
             text = "Decrypting audio...",
             fontSize = 16.sp,
-            color = AppColors.TextSecondary
+            color = Color.White
         )
     }
 }

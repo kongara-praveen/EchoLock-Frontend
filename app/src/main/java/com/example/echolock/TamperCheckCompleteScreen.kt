@@ -25,6 +25,11 @@ import com.example.echolock.ui.theme.AppColors
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.echolock.ui.theme.GradientBackgrounds
+import androidx.compose.foundation.shape.CircleShape
+import com.example.echolock.ui.theme.FeatureCardColors
+
+
 
 @Composable
 fun TamperCheckCompleteScreen(
@@ -77,18 +82,32 @@ fun TamperCheckCompleteScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 28.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(120.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(140.dp)
+                .background(
+                    if (isSafe)
+                        FeatureCardColors.Green.copy(alpha = 0.2f)
+                    else
+                        FeatureCardColors.Red.copy(alpha = 0.2f),
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(90.dp)
+            )
+        }
 
         Spacer(Modifier.height(24.dp))
 
@@ -96,7 +115,7 @@ fun TamperCheckCompleteScreen(
             text = title,
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
-            color = color
+            color = Color.White
         )
 
         Spacer(Modifier.height(12.dp))
@@ -104,7 +123,7 @@ fun TamperCheckCompleteScreen(
         Text(
             text = description,
             fontSize = 16.sp,
-            color = AppColors.TextSecondary,
+            color = Color.White.copy(alpha = 0.85f),
             textAlign = TextAlign.Center
         )
 
@@ -113,7 +132,8 @@ fun TamperCheckCompleteScreen(
         Text(
             text = fileName,
             fontSize = 13.sp,
-            color = AppColors.TextTertiary
+            color = Color.White.copy(alpha = 0.7f)
+
         )
 
         Spacer(Modifier.height(40.dp))
@@ -124,8 +144,13 @@ fun TamperCheckCompleteScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark
-            ),
+                containerColor = if (isSafe)
+                    FeatureCardColors.Green
+                else
+                    FeatureCardColors.Red,
+                disabledContainerColor = Color(0xFF475569)
+            )
+            ,
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
                 pressedElevation = 2.dp

@@ -30,6 +30,9 @@ import com.example.echolock.ui.theme.AppColors
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
+
 
 @Composable
 fun DecryptImageResultScreen(
@@ -68,7 +71,8 @@ fun DecryptImageResultScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -83,14 +87,14 @@ fun DecryptImageResultScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { onBack() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 text = "Message Extracted",
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -101,7 +105,8 @@ fun DecryptImageResultScreen(
             Icon(
                 painterResource(R.drawable.ic_lock),
                 contentDescription = null,
-                tint = if (hasMessage) AppColors.Success else AppColors.Error,
+                tint = if (hasMessage) AppColors.Success else AppColors.Error
+                ,
                 modifier = Modifier.size(40.dp)
             )
 
@@ -114,7 +119,7 @@ fun DecryptImageResultScreen(
                         "No Hidden Message Found",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = AppColors.TextPrimary
+                    color = Color.White
                 )
 
                 Spacer(Modifier.height(4.dp))
@@ -122,7 +127,7 @@ fun DecryptImageResultScreen(
                 Text(
                     text = "Source: $imageName",
                     fontSize = 13.sp,
-                    color = AppColors.TextSecondary
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
         }
@@ -134,7 +139,11 @@ fun DecryptImageResultScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(250.dp)
-                .background(AppColors.Surface, RoundedCornerShape(16.dp))
+                .background(
+                    FeatureCardColors.Orange.copy(alpha = 0.9f),
+                    RoundedCornerShape(16.dp)
+                )
+
                 .padding(16.dp)
         ) {
             Text(
@@ -143,7 +152,7 @@ fun DecryptImageResultScreen(
                 else
                     "This image does not contain any hidden message.",
                 fontSize = 15.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 modifier = Modifier.verticalScroll(rememberScrollState())
             )
         }
@@ -171,15 +180,18 @@ fun DecryptImageResultScreen(
             },
             enabled = hasMessage,
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = AppColors.PrimaryDark
-            ),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = FeatureCardColors.Orange,
+                disabledContainerColor = Color(0xFF475569)
+            )
+
+            ,
             shape = RoundedCornerShape(14.dp)
         ) {
             Icon(
                 painterResource(R.drawable.ic_copy),
                 contentDescription = null,
-                tint = AppColors.PrimaryDark,
+                tint = FeatureCardColors.Orange,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(Modifier.width(8.dp))
@@ -200,16 +212,23 @@ fun DecryptImageResultScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark
-            ),
             shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = FeatureCardColors.Orange,   // 🔥 SOLID YELLOW
+                contentColor = Color.White,
+                disabledContainerColor = FeatureCardColors.Orange.copy(alpha = 0.5f)
+            ),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
                 pressedElevation = 2.dp
             )
         ) {
-            Text("Done", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = "Done",
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
+
     }
 }

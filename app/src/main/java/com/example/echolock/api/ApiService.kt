@@ -122,6 +122,8 @@ interface ApiService {
         @Field("image_name") imageName: String,   // ✅ MUST MATCH PHP
         @Field("message") message: String          // ✅ MUST MATCH PHP
     ): Call<StegoResponse>
+    // ================= FILES =================
+    
     @GET("files/get_files.php")
     suspend fun getFiles(
         @Query("user_id") userId: Int
@@ -130,7 +132,8 @@ interface ApiService {
     @FormUrlEncoded
     @POST("files/delete_file.php")
     suspend fun deleteFile(
-        @Field("file_id") fileId: Int
+        @Field("file_id") fileId: Int,
+        @Field("file_type") fileType: String
     ): GenericResponse
     @GET("history/get_history.php")
     suspend fun getHistory(

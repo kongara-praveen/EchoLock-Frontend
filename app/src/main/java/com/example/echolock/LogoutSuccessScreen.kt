@@ -75,11 +75,6 @@ fun LogoutSuccessScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Text(
-            text = "Redirecting...",
-            fontSize = 15.sp,
-            color = AppColors.TextSecondary,
-            textAlign = TextAlign.Center
-        )
+
     }
 }

@@ -1,6 +1,7 @@
 package com.example.echolock.ui.screens
 
 // Required Imports
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,11 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.R
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
 
 @Composable
-fun OnBoardingTamperScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
+fun OnBoardingTamperScreen(
+    onContinue: () -> Unit,
+    onSkip: () -> Unit
+) {
 
-    // Screen entrance animation
     val alpha by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(durationMillis = 300),
@@ -37,100 +41,140 @@ fun OnBoardingTamperScreen(onContinue: () -> Unit, onSkip: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
             .alpha(alpha)
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Spacer(modifier = Modifier.height(135.dp))      // matched with Images screen
+        Spacer(modifier = Modifier.height(135.dp))
 
+        /* 🛡️ TAMPER ICON – CONSISTENT WITH OTHER SCREENS */
         Box(
-            modifier = Modifier
-                .size(255.dp)
-                .background(AppColors.PrimaryLight.copy(alpha = 0.2f), CircleShape),
+            modifier = Modifier.size(260.dp),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_tamper),
-                contentDescription = "tamper icon",
-                modifier = Modifier.size(90.dp)           // very close to image icon scale
+
+            // 🔵 Soft blue glow
+            Box(
+                modifier = Modifier
+                    .size(260.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF38BDF8).copy(alpha = 0.45f),
+                                Color.Transparent
+                            )
+                        ),
+                        CircleShape
+                    )
             )
+
+            // ⚪ Solid inner circle
+            Box(
+                modifier = Modifier
+                    .size(165.dp)
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+
+                // 🛡️ TAMPER ICON (DARK BLUE FOR CONTRAST)
+                Image(
+                    painter = painterResource(id = R.drawable.ic_tamper),
+                    contentDescription = "Tamper Detection",
+                    modifier = Modifier.size(100.dp),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                        Color(0xFF0F172A) // same dark tone as image/audio icons
+                    )
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(55.dp))        // same title distance
+        Spacer(modifier = Modifier.height(52.dp))
 
+        /* 🔥 TITLE */
         Text(
-            "Tamper Detection",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Black,
-            color = AppColors.TextPrimary,
+            text = "Tamper Detection",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp,
+            color = Color(0xFFEAF6FF)
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
+        /* 📝 DESCRIPTION */
         Text(
-            text = "Verify the integrity of your files and detect\n" +
-                    "any unauthorized changes instantly.",
-            fontSize = 15.sp,
+            text = "Detect any unauthorized modification and verify the integrity of your files.",
+            fontSize = 16.sp,
+            color = Color(0xFFBEE7E8),
             textAlign = TextAlign.Center,
-            color = AppColors.TextSecondary
+            lineHeight = 22.sp
         )
 
-        Spacer(modifier = Modifier.height(75.dp))        // indicator aligned visually
+        Spacer(modifier = Modifier.height(72.dp))
 
+        /* 🔘 PAGE INDICATORS */
         Row(
-            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // ○ First (inactive)
             Box(
                 modifier = Modifier
                     .size(7.dp)
-                    .background(AppColors.BorderLight, CircleShape)
+                    .background(Color.White.copy(alpha = 0.35f), CircleShape)
             )
 
             Spacer(Modifier.width(10.dp))
 
-            // ○ Second (inactive)
             Box(
                 modifier = Modifier
                     .size(7.dp)
-                    .background(AppColors.BorderLight, CircleShape)
+                    .background(Color.White.copy(alpha = 0.35f), CircleShape)
             )
 
             Spacer(Modifier.width(10.dp))
 
-            // ● Third (active)
             Box(
                 modifier = Modifier
                     .size(10.dp)
-                    .background(AppColors.PrimaryDark, CircleShape)
+                    .background(Color(0xFF38BDF8), CircleShape) // active (blue)
             )
         }
 
+        Spacer(modifier = Modifier.height(58.dp))
 
-        Spacer(modifier = Modifier.height(58.dp))        // button location matched perfectly
-
+        /* ▶ CONTINUE BUTTON */
         Button(
             onClick = onContinue,
-            modifier = Modifier.fillMaxWidth().height(55.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
-            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF38BDF8)
+            ),
+            shape = RoundedCornerShape(16.dp),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
                 pressedElevation = 2.dp
             )
-        ) { Text("Continue", color = AppColors.TextOnPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold) }
+        ) {
+            Text(
+                text = "Continue",
+                color = Color.White,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
+        /* ⏭ SKIP */
         Text(
-            "Skip",
+            text = "Skip",
+            color = Color(0xFFBEE7E8),
             fontSize = 14.sp,
-            color = AppColors.TextSecondary,
             modifier = Modifier.clickable { onSkip() }
         )
     }

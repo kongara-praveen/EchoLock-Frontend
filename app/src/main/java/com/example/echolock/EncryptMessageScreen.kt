@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.example.echolock.R
 import com.example.echolock.session.UserSession
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
 
 @Composable
 fun EncryptMessageScreen(
@@ -38,12 +40,12 @@ fun EncryptMessageScreen(
     var password by remember { mutableStateOf(UserSession.encryptionPassword ?: "") }
     var passwordVisible by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    
+
     // Save to UserSession as user types
     LaunchedEffect(message) {
         UserSession.secretMessage = message
     }
-    
+
     LaunchedEffect(password) {
         UserSession.encryptionPassword = password
     }
@@ -58,7 +60,8 @@ fun EncryptMessageScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -73,14 +76,16 @@ fun EncryptMessageScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { onBack() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
+
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 text = "Secret Message",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
+
             )
         }
 
@@ -98,13 +103,15 @@ fun EncryptMessageScreen(
                 painter = painterResource(R.drawable.ic_lock),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = AppColors.PrimaryDark
+                tint = Color.White
+
             )
             Spacer(Modifier.width(12.dp))
             Text(
                 "Your message will be encrypted safely.",
                 fontSize = 14.sp,
-                color = AppColors.TextSecondary
+                color = Color.White
+
             )
         }
 
@@ -114,7 +121,8 @@ fun EncryptMessageScreen(
             "Enter Your Message",
             fontWeight = FontWeight.SemiBold,
             fontSize = 15.sp,
-            color = AppColors.TextPrimary
+            color = Color.White
+
         )
         Spacer(Modifier.height(8.dp))
 
@@ -131,13 +139,14 @@ fun EncryptMessageScreen(
             placeholder = {
                 Text(
                     "Type your secret message here...",
-                    color = AppColors.TextTertiary
+                    color = Color.White
+
                 )
             },
             isError = error != null,
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Normal
             ),
             colors = OutlinedTextFieldDefaults.colors(
@@ -168,7 +177,8 @@ fun EncryptMessageScreen(
             "Enter Password",
             fontWeight = FontWeight.SemiBold,
             fontSize = 15.sp,
-            color = AppColors.TextPrimary
+            color = Color.White
+
         )
         Spacer(Modifier.height(8.dp))
 
@@ -182,7 +192,8 @@ fun EncryptMessageScreen(
             placeholder = {
                 Text(
                     "Enter password to protect your message",
-                    color = AppColors.TextTertiary
+                    color = Color.White
+
                 )
             },
             singleLine = true,
@@ -192,14 +203,14 @@ fun EncryptMessageScreen(
                     Icon(
                         imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = null,
-                        tint = AppColors.TextSecondary
+                        tint = Color.White
                     )
                 }
             },
             isError = error != null,
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Normal
             ),
             colors = OutlinedTextFieldDefaults.colors(
@@ -258,8 +269,8 @@ fun EncryptMessageScreen(
                 .height(56.dp)
                 .alpha(buttonAlpha),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
+                containerColor = FeatureCardColors.Blue,
+                disabledContainerColor = Color(0xFF475569)
             ),
             shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(

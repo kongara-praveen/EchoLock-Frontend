@@ -30,6 +30,9 @@ import com.example.echolock.session.UserSession
 import com.example.echolock.ui.theme.AppColors
 import com.example.echolock.util.ImageSteganography
 import com.example.echolock.util.saveStegoImage
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
+
 
 @Composable
 fun EncryptImageMessageScreen(
@@ -43,12 +46,12 @@ fun EncryptImageMessageScreen(
     var password by remember { mutableStateOf(UserSession.encryptImagePassword ?: "") }
     var passwordVisible by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
-    
+
     // Save to UserSession as user types
     LaunchedEffect(message) {
         UserSession.encryptImageMessage = message
     }
-    
+
     LaunchedEffect(password) {
         UserSession.encryptImagePassword = password
     }
@@ -63,7 +66,8 @@ fun EncryptImageMessageScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -79,7 +83,7 @@ fun EncryptImageMessageScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { onBack() },
-                tint = AppColors.TextPrimary
+                tint = Color.White
             )
 
             Spacer(Modifier.width(12.dp))
@@ -88,7 +92,7 @@ fun EncryptImageMessageScreen(
                 text = "Secret Message",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
             )
         }
 
@@ -97,14 +101,16 @@ fun EncryptImageMessageScreen(
         /* ---------- INFO CARD ---------- */
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFEFFFF9)),
+            colors = CardDefaults.cardColors(
+                containerColor = FeatureCardColors.Pink.copy(alpha = 0.9f)
+            ),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Text(
                 text = "Your message will be securely hidden inside the selected image using LSB steganography.",
                 fontSize = 14.sp,
-                color = AppColors.PrimaryDark,
+                color = Color.White,
                 modifier = Modifier.padding(16.dp),
                 lineHeight = 20.sp
             )
@@ -117,10 +123,11 @@ fun EncryptImageMessageScreen(
             text = "Secret Message",
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = AppColors.TextPrimary,
+            color = Color.White
+            ,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        
+
         OutlinedTextField(
             value = message,
             onValueChange = { message = it },
@@ -130,19 +137,22 @@ fun EncryptImageMessageScreen(
             placeholder = {
                 Text(
                     "Type your secret message here…",
-                    color = AppColors.TextTertiary
+                    color = Color.White.copy(alpha = 0.8f)
+
                 )
             },
             shape = RoundedCornerShape(14.dp),
             maxLines = 6,
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Normal
             ),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = AppColors.TextPrimary,
-                unfocusedTextColor = AppColors.TextPrimary,
+                focusedTextColor = Color.White
+                ,
+                unfocusedTextColor =  Color.White
+                ,
                 focusedBorderColor = AppColors.PrimaryDark,
                 unfocusedBorderColor = AppColors.BorderLight,
                 cursorColor = AppColors.PrimaryDark,
@@ -158,7 +168,8 @@ fun EncryptImageMessageScreen(
             text = "Enter Password",
             fontWeight = FontWeight.SemiBold,
             fontSize = 15.sp,
-            color = AppColors.TextPrimary,
+            color = Color.White
+            ,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
@@ -169,7 +180,8 @@ fun EncryptImageMessageScreen(
             placeholder = {
                 Text(
                     "Enter password to protect your message",
-                    color = AppColors.TextTertiary
+                    color = Color.White.copy(alpha = 0.8f)
+
                 )
             },
             singleLine = true,
@@ -179,18 +191,22 @@ fun EncryptImageMessageScreen(
                     Icon(
                         imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = null,
-                        tint = AppColors.TextSecondary
+                        tint = Color.White
+
                     )
                 }
             },
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = AppColors.TextPrimary,
+                color = Color.White
+                ,
                 fontWeight = FontWeight.Normal
             ),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = AppColors.TextPrimary,
-                unfocusedTextColor = AppColors.TextPrimary,
+                focusedTextColor = Color.White
+                ,
+                unfocusedTextColor = Color.White
+                ,
                 focusedBorderColor = AppColors.PrimaryDark,
                 unfocusedBorderColor = AppColors.BorderLight,
                 cursorColor = AppColors.PrimaryDark,
@@ -210,7 +226,7 @@ fun EncryptImageMessageScreen(
             animationSpec = tween(durationMillis = 200),
             label = "button_alpha"
         )
-        
+
         Button(
             enabled = buttonEnabled,
             modifier = Modifier
@@ -219,8 +235,9 @@ fun EncryptImageMessageScreen(
                 .alpha(buttonAlpha),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
+                containerColor = FeatureCardColors.Pink,
+                        disabledContainerColor = Color(0xFF475569)
+
             ),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
@@ -280,22 +297,22 @@ fun EncryptImageMessageScreen(
 
                     // Generate integrity signature from encrypted image (before embedding signature)
                     val hashAndSignature = com.example.echolock.util.IntegritySignatureUtil.generateHashAndSignature(stegoBitmapStep1)
-                    
+
                     if (hashAndSignature != null) {
                         val (imageHashValue, integritySignature) = hashAndSignature
                         android.util.Log.d("EncryptImage", "Generated hash: $imageHashValue")
                         android.util.Log.d("EncryptImage", "Generated signature: $integritySignature")
-                        
+
                         /* ================= ENCRYPT (STEP 2: Embed Signature) ================= */
                         // Now embed the signature in the already-encrypted image
                         val (finalStegoBitmap, signatureStartIndex) = com.example.echolock.util.ImageSteganography.encodeWithSignature(
                             encryptedBitmap = stegoBitmapStep1,
                             integritySignature = integritySignature
                         )
-                        
+
                         // Store signature metadata for verification (optional - signature is embedded in image)
                         android.util.Log.d("EncryptImage", "Signature embedded at pixel index: $signatureStartIndex")
-                        
+
                         saveStegoImage(context, finalStegoBitmap, originalFileName)
                     } else {
                         android.util.Log.w("EncryptImage", "Failed to generate integrity signature, saving without signature")
@@ -319,7 +336,7 @@ fun EncryptImageMessageScreen(
             Text(
                 text = if (loading) "Encrypting…" else "Encrypt & Hide",
                 color = Color.White,
-                fontSize = 16.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }

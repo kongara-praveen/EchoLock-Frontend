@@ -20,6 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.echolock.ui.theme.AppColors
+import com.example.echolock.ui.theme.GradientBackgrounds
+import com.example.echolock.ui.theme.FeatureCardColors
+
 
 @Composable
 fun TamperCheckScreen(
@@ -62,7 +65,8 @@ fun TamperCheckScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Background)
+            .background(GradientBackgrounds.PrimaryGradient)
+
             .alpha(alpha)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
@@ -73,12 +77,14 @@ fun TamperCheckScreen(
                 text = "Tamper Check",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
+                color = Color.White
+
             )
             Spacer(Modifier.weight(1f))
             Text(
                 text = "Back",
-                color = AppColors.PrimaryDark,
+                color = Color.White
+                ,
                 modifier = Modifier.clickable { onBack() }
             )
         }
@@ -89,7 +95,10 @@ fun TamperCheckScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = AppColors.Surface)
+            colors = CardDefaults.cardColors(
+                containerColor = FeatureCardColors.Green.copy(alpha = 0.9f)
+            )
+
         ) {
             Column(
                 modifier = Modifier
@@ -104,14 +113,16 @@ fun TamperCheckScreen(
                         text = "Upload Encrypted Image or Audio",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = AppColors.TextPrimary
+                        color = Color.White
+
                     )
 
                     Spacer(Modifier.height(12.dp))
 
                     Button(
                         onClick = { picker.launch("*/*") },
-                        colors = ButtonDefaults.buttonColors(containerColor = AppColors.PrimaryDark),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent
+                        ),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Text("Choose File", color = AppColors.TextOnPrimary, fontWeight = FontWeight.SemiBold)
@@ -123,7 +134,8 @@ fun TamperCheckScreen(
                         text = "File Selected",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = AppColors.TextPrimary
+                        color = Color.White
+
                     )
 
                     Spacer(Modifier.height(6.dp))
@@ -131,7 +143,7 @@ fun TamperCheckScreen(
                     Text(
                         text = selectedFileName ?: "Selected file",
                         fontSize = 13.sp,
-                        color = AppColors.TextSecondary
+                        color = Color.White.copy(alpha = 0.8f)
                     )
 
                     Spacer(Modifier.height(12.dp))
@@ -161,9 +173,10 @@ fun TamperCheckScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.PrimaryDark,
-                disabledContainerColor = AppColors.BorderLight
-            ),
+                containerColor = FeatureCardColors.Green,
+                disabledContainerColor = Color(0xFF475569)
+            )
+            ,
             shape = RoundedCornerShape(14.dp),
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,

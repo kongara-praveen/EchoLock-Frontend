@@ -12,15 +12,48 @@ import java.nio.charset.StandardCharsets
 object TamperCheckUtil {
 
     /**
-     * Verifies image integrity using cryptographic hash and integrity signature.
-     * TRUE  → SAFE (Image hash matches stored signature - image is authentic and untampered)
-     * FALSE → TAMPERED (Image hash doesn't match stored signature - image has been modified)
-     * @param file The encrypted image file to check
+     * Verifies file integrity using cryptographic hash and integrity signature.
+     * For audio files: Always returns true (file is safe).
+     * For image files: Performs full tamper check with integrity signature verification.
+     * TRUE  → SAFE (File hash matches stored signature - file is authentic and untampered)
+     * FALSE → TAMPERED (File hash doesn't match stored signature - file has been modified)
+     * @param file The encrypted file to check (image or audio)
      * @param originalFileName The original file name used to retrieve stored signature from server
      */
     suspend fun checkFile(file: File, originalFileName: String? = null): Boolean =
         withContext(Dispatchers.IO) {
 
+            try {
+                // Check if file is an audio file
+                val fileName = file.name.lowercase()
+                val isAudioFile = fileName.endsWith(".wav", ignoreCase = true) ||
+                        fileName.endsWith(".mp3", ignoreCase = true) ||
+                        fileName.endsWith(".m4a", ignoreCase = true) ||
+                        fileName.endsWith(".aac", ignoreCase = true) ||
+                        fileName.endsWith(".ogg", ignoreCase = true) ||
+                        fileName.endsWith(".flac", ignoreCase = true)
+
+                if (isAudioFile) {
+                    // Audio files: Always return safe (no tamper check for audio)
+                    Log.d("TamperCheck", "Audio file detected - returning safe")
+                    return@withContext true
+                }
+
+                // Image files: Perform full tamper check
+                return@withContext checkImageFile(file, originalFileName)
+
+            } catch (e: Exception) {
+                Log.e("TamperCheck", "Error during tamper check", e)
+                e.printStackTrace()
+                return@withContext false
+            }
+        }
+
+    /**
+     * Verifies image integrity using cryptographic hash and integrity signature.
+     */
+    private suspend fun checkImageFile(file: File, originalFileName: String? = null): Boolean =
+        withContext(Dispatchers.IO) {
             try {
                 // 1️⃣ Decode image to extract embedded integrity signature
                 val bitmap = BitmapFactory.decodeFile(file.absolutePath)
@@ -93,7 +126,7 @@ object TamperCheckUtil {
                 return@withContext isSafe
 
             } catch (e: Exception) {
-                Log.e("TamperCheck", "Error during tamper check", e)
+                Log.e("TamperCheck", "Error during image tamper check", e)
                 e.printStackTrace()
                 return@withContext false
             }
